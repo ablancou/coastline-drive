@@ -3,8 +3,8 @@ import { getRoadSurfaceAt, sampleRoadFrame } from "@/game/procedural/geometry/ro
 import { VEHICLE_CONFIG } from "@/game/constants/vehicle";
 import { finiteOr } from "@/lib/math";
 
-/** Param along the coastal spline where the lap begins (near z ≈ 80). */
-const SPAWN_T = 0.04;
+/** Param along the coastal spline where the lap begins (also the finish line). */
+export const SPAWN_T = 0.04;
 
 const frame = {
   point: new Vector3(),

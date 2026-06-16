@@ -138,6 +138,72 @@ body {
   text-align: center;
 }
 
+/* ---- Lap timer ---- */
+.lap {
+  position: absolute;
+  top: 4.2rem;
+  left: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.lap__current {
+  display: flex;
+  flex-direction: column;
+}
+
+.lap__eyebrow {
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  color: #6a8aa8;
+}
+
+.lap__time {
+  font-size: 1.9rem;
+  font-weight: 300;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #e8eef4;
+}
+
+.lap__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.2rem;
+}
+
+.lap__row {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lap__label {
+  color: #6a8aa8;
+  width: 2.6rem;
+  letter-spacing: 0.1em;
+}
+
+.lap__value {
+  color: #e8eef4;
+}
+
+.lap__value--best {
+  color: #7cffb2;
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .lap {
+    top: 3.4rem;
+  }
+  .lap__time {
+    font-size: 1.5rem;
+  }
+}
+
 /* ---- Exit-to-menu button ---- */
 .exit-btn {
   position: absolute;

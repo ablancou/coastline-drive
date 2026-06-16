@@ -111,6 +111,25 @@ export function getRoadSurfaceY(x: number, z: number): number {
   return _surfaceScratch.point.y;
 }
 
+/** Normalized progress (0..1) of the nearest point on the circuit at world XZ. */
+export function getRoadProgress(x: number, z: number): number {
+  const curve = getRoadCurve();
+  let bestT = 0;
+  let bestDist = Infinity;
+  for (let i = 0; i < 480; i++) {
+    const t = i / 480;
+    curve.getPoint(t, _point);
+    const dx = _point.x - x;
+    const dz = _point.z - z;
+    const dist = dx * dx + dz * dz;
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestT = t;
+    }
+  }
+  return bestT;
+}
+
 /**
  * +1 or -1: the world-space sign of the road `side` vector that points toward
  * the loop interior (where cliffs rise). Computed once from the loop centroid.

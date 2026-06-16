@@ -7,6 +7,7 @@ import { PhysicsWorld } from "@/game/physics/physics-world";
 import { CameraBootstrap } from "@/game/systems/camera-bootstrap";
 import { ChaseCamera } from "@/game/systems/chase-camera";
 import { EngineAudioSystem } from "@/game/systems/engine-audio-system";
+import { LapSystem } from "@/game/systems/lap-system";
 import { VehicleController } from "@/game/vehicles/vehicle-controller";
 
 /** Full 3D scene — rendering, physics, and simulation live exclusively here. */
@@ -21,6 +22,7 @@ export function GameScene() {
         <VehicleController />
       </PhysicsWorld>
       <EngineAudioSystem />
+      <LapSystem />
       <PostFx />
     </>
   );

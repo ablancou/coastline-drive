@@ -1,5 +1,6 @@
 "use client";
 
+import { LapTimer } from "@/components/ui/lap-timer";
 import { finiteOr } from "@/lib/math";
 import { useTelemetryStore } from "@/stores/telemetry-store";
 
@@ -13,6 +14,8 @@ export function Hud() {
         <span className="hud__title">COASTLINE</span>
         <span className="hud__subtitle">DRIVE</span>
       </header>
+
+      <LapTimer />
 
       <div className="hud__speed">
         <span className="hud__speed-value">{formatInt(snapshot.speedKmh, 0)}</span>

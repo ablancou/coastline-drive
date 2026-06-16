@@ -1,0 +1,47 @@
+"use client";
+
+import { useFrame } from "@react-three/fiber";
+import { useRef } from "react";
+import { SPAWN_T } from "@/game/constants/spawn";
+import { getRoadProgress } from "@/game/procedural/geometry/road-path";
+import { vehicleTarget } from "@/game/systems/vehicle-target";
+import { useLapStore } from "@/stores/lap-store";
+
+/**
+ * Lap timing: tracks the car's normalized progress along the circuit and counts
+ * a lap when it crosses the start/finish line (SPAWN_T) in the forward
+ * direction — but only after passing the far side, so jitter at the line and
+ * reversing can't trigger a false lap.
+ */
+export function LapSystem() {
+  const prevAround = useRef<number | null>(null);
+  const armed = useRef(false);
+
+  useFrame(() => {
+    if (!vehicleTarget.active) return;
+
+    const pos = vehicleTarget.position;
+    const t = getRoadProgress(pos.x, pos.z);
+    // Progress measured from the finish line (0 at the line, →1 around the lap).
+    const around = (t - SPAWN_T + 1) % 1;
+
+    if (prevAround.current === null) {
+      prevAround.current = around;
+      useLapStore.getState().startTiming(performance.now());
+      return;
+    }
+
+    // Arm once the car has driven past the far half of the circuit.
+    if (around > 0.5) armed.current = true;
+
+    // Forward crossing of the finish line: progress wraps from ~1 back to ~0.
+    if (armed.current && prevAround.current > 0.9 && around < 0.1) {
+      useLapStore.getState().completeLap(performance.now());
+      armed.current = false;
+    }
+
+    prevAround.current = around;
+  });
+
+  return null;
+}
