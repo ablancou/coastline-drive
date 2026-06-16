@@ -17,17 +17,17 @@ export function StartScreen({ onStart }: StartScreenProps) {
   };
 
   return (
-    <div className="start" role="dialog" aria-label="Veloce Coastal — start">
+    <div className="start" role="dialog" aria-label="Coastline Drive — start">
       <div className="start__inner">
         <span className="start__tag">PROTOTYPE · WORK IN PROGRESS</span>
-        <h1 className="start__title">VELOCE</h1>
-        <h2 className="start__subtitle">COASTAL</h2>
+        <h1 className="start__title">COASTLINE</h1>
+        <h2 className="start__subtitle">DRIVE</h2>
         <p className="start__tagline">
           A procedural coastal-highway racer — built in code, no external assets.
         </p>
 
         <button className="start__cta" onClick={handleStart} autoFocus>
-          DRIVE
+          START
         </button>
 
         <div className="start__controls">

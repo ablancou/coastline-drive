@@ -233,9 +233,9 @@ body {
 }
 
 .start__title {
-  font-size: clamp(3rem, 13vw, 6.5rem);
+  font-size: clamp(2.3rem, 11vw, 5.5rem);
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   line-height: 0.92;
   background: linear-gradient(180deg, #ffffff 0%, #9fc4ff 100%);
   -webkit-background-clip: text;

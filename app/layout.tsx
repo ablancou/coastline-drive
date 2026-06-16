@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Veloce Coastal",
+  title: "Coastline Drive",
   description:
-    "High-fidelity coastal highway racing prototype — procedural assets, sim-cade physics.",
+    "A procedural coastal-highway racing game — code-built world, sim-cade drift handling, CC0 skies.",
 };
 
 export default function RootLayout({

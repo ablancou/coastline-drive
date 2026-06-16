@@ -18,7 +18,7 @@ import {
 export function createVehicleBodyGroup(): Object3D {
   const group = new Group();
 
-  // Signature "Veloce Rosso" — deep metallic red with a clearcoat lacquer.
+  // Signature "Coastline Rosso" — deep metallic red with a clearcoat lacquer.
   const paint = new MeshPhysicalMaterial({
     color: 0xb10f1a,
     metalness: 0.55,

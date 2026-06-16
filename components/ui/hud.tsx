@@ -10,8 +10,8 @@ export function Hud() {
   return (
     <div className="hud">
       <header className="hud__brand">
-        <span className="hud__title">VELOCE</span>
-        <span className="hud__subtitle">COASTAL</span>
+        <span className="hud__title">COASTLINE</span>
+        <span className="hud__subtitle">DRIVE</span>
       </header>
 
       <div className="hud__speed">

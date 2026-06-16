@@ -1,12 +1,12 @@
-# Veloce Coastal — Agent & Contributor Guide
+# Coastline Drive — Agent & Contributor Guide
 
-> **Veloce Coastal** is a high-fidelity 3D coastal highway racing prototype built for portfolio excellence (Phase 1) and commercial AAA scale (Phase 2).
+> **Coastline Drive** is a high-fidelity 3D coastal highway racing prototype built for portfolio excellence (Phase 1) and commercial AAA scale (Phase 2).
 
 ---
 
 ## ⭐ PRIME DIRECTIVE (non-negotiable, read first)
 
-> **Veloce Coastal must become the best car game that has ever existed.**
+> **Coastline Drive must become the best car game that has ever existed.**
 
 This is the single overriding goal of the project. Every decision — visual,
 physical, audio, UX, performance — is measured against this bar:
@@ -148,7 +148,7 @@ All 3D models, textures, HDRIs, materials, audio, and any other visual or audio 
 ## Folder Structure
 
 ```
-veloce-coastal/
+coastline-drive/
 ├── app/                      # Next.js App Router (UI shell only)
 ├── components/
 │   ├── game/                 # R3F Canvas, Scene, lighting
