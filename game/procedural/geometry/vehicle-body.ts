@@ -123,10 +123,10 @@ export function createVehicleBodyGroup(colorHex: string | number = 0xb10f1a): Ob
     add(new BoxGeometry(0.3, 0.16, 0.1), leather, sx, 0.82, -0.66); // headrest
   }
 
-  // --- Steering wheel in front of the driver (left seat) ---
-  const wheel = add(new TorusGeometry(0.16, 0.025, 10, 20), carbon, -0.42, 0.5, 0.16);
+  // --- Steering wheel in front of the driver (left-hand drive: +X seat) ---
+  const wheel = add(new TorusGeometry(0.16, 0.025, 10, 20), carbon, 0.42, 0.5, 0.16);
   wheel.rotation.x = Math.PI / 2 - 0.5;
-  const column = add(new CylinderGeometry(0.02, 0.02, 0.22, 8), carbon, -0.42, 0.45, 0.28);
+  const column = add(new CylinderGeometry(0.02, 0.02, 0.22, 8), carbon, 0.42, 0.45, 0.28);
   column.rotation.x = Math.PI / 2 - 0.5;
 
   // --- Low raked windshield frame + glass ---
@@ -179,8 +179,8 @@ export function createVehicleBodyGroup(colorHex: string | number = 0xb10f1a): Ob
   add(new BoxGeometry(0.12, 0.12, 2.6), carbon, -0.94, -0.06, -0.1);
   add(new BoxGeometry(0.12, 0.12, 2.6), carbon, 0.94, -0.06, -0.1);
 
-  // --- Driver figures (left seat) — toggled by the controller ---
-  const seatPos = { x: -0.42, y: 0.18, z: -0.4 };
+  // --- Driver figures (left-hand drive: +X seat) — toggled by the controller ---
+  const seatPos = { x: 0.42, y: 0.18, z: -0.4 };
   const driverMan = createDriverFigure("man");
   const driverWoman = createDriverFigure("woman");
   for (const d of [driverMan, driverWoman]) {
