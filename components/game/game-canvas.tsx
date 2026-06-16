@@ -33,7 +33,7 @@ export function GameCanvas() {
       camera={{
         fov: 55,
         near: 0.5,
-        far: 500,
+        far: 1500,
         position: initialCamera.position.toArray(),
       }}
     >

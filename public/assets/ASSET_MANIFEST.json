@@ -3,13 +3,13 @@
   "policy": "CC0 and Public Domain only. Procedural assets are not listed here.",
   "assets": [
     {
-      "id": "hdri-golden-bay",
-      "file": "third-party/hdri/golden_bay_2k.hdr",
-      "source": "https://polyhaven.com/a/golden_bay",
+      "id": "hdri-secluded-beach",
+      "file": "third-party/hdri/secluded_beach_2k.hdr",
+      "source": "https://polyhaven.com/a/secluded_beach",
       "license": "CC0",
       "author": "Poly Haven",
       "addedAt": "2026-06-16",
-      "usage": "Sky preset 'Acapulco · bahía dorada' (default) — background + IBL."
+      "usage": "Sky preset 'Acapulco · atardecer' (default) — background + IBL."
     },
     {
       "id": "hdri-blue-lagoon",

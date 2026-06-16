@@ -34,21 +34,21 @@ export function SkySetup() {
 
       {/* Warm key sun — the single shadow caster. Aligned to a golden-hour feel. */}
       <directionalLight
-        position={[80, 55, 60]}
+        position={[120, 90, 90]}
         intensity={2.4}
         color="#fff1d6"
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-camera-far={320}
-        shadow-camera-left={-90}
-        shadow-camera-right={90}
-        shadow-camera-top={90}
-        shadow-camera-bottom={-90}
+        shadow-mapSize-width={4096}
+        shadow-mapSize-height={4096}
+        shadow-camera-far={700}
+        shadow-camera-left={-260}
+        shadow-camera-right={260}
+        shadow-camera-top={260}
+        shadow-camera-bottom={-260}
         shadow-bias={-0.0004}
       />
 
-      <fog attach="fog" args={["#cfe0ec", 200, 520]} />
+      <fog attach="fog" args={["#cfe0ec", 320, 900]} />
     </>
   );
 }

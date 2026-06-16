@@ -18,9 +18,10 @@ import {
   getRoadSurfaceAt,
   type RoadSurfaceSample,
 } from "@/game/procedural/geometry/road-path";
+import { playImpact } from "@/game/procedural/audio/engine-audio";
 import { applyRaycastSuspension } from "@/game/physics/suspension-raycast";
 import { createInputSystem } from "@/game/systems/input-system";
-import { updateVehicleTarget } from "@/game/systems/vehicle-target";
+import { updateVehicleTarget, vehicleTarget } from "@/game/systems/vehicle-target";
 import { clamp, finiteOr, wrapAngle } from "@/lib/math";
 import { useTelemetryStore } from "@/stores/telemetry-store";
 import type { InputState } from "@/types/input";
@@ -38,6 +39,8 @@ const _spinQuat = new Quaternion();
 const _spinAxis = new Vector3(1, 0, 0);
 const _vel = new Vector3();
 const _nextQuat = new Quaternion();
+// Frames remaining before another impact sound may trigger (~0.4s at 60 Hz).
+let impactCooldown = 0;
 const _surface: RoadSurfaceSample = {
   y: 0,
   tangent: new Vector3(),
@@ -264,7 +267,21 @@ function stepVehicle(
   if (clampedLateral !== lateral) {
     nx = _surface.point.x + _surface.side.x * clampedLateral;
     nz = _surface.point.z + _surface.side.z * clampedLateral;
+
+    // Hit the edge: trigger a crash sound + shake + speed scrub (rate-limited).
+    const lateralSpeed = Math.abs(
+      (fwdX * _surface.side.x + fwdZ * _surface.side.z) * speed,
+    );
+    if (impactCooldown <= 0 && lateralSpeed > 4) {
+      const intensity = clamp(lateralSpeed / 25, 0.15, 1);
+      playImpact(intensity);
+      vehicleTarget.shake = Math.max(vehicleTarget.shake, intensity * 0.6);
+      speed *= 1 - 0.5 * intensity;
+      sim.speedMs = speed;
+      impactCooldown = 24;
+    }
   }
+  if (impactCooldown > 0) impactCooldown--;
   const ny = _surface.y + restHeight;
 
   if (!Number.isFinite(nx) || !Number.isFinite(ny) || !Number.isFinite(nz) || !Number.isFinite(heading)) {

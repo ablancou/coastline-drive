@@ -1,26 +1,37 @@
 import { CatmullRomCurve3, Vector3 } from "three";
 
 export const ROAD_WIDTH = 12;
-export const ROAD_SEGMENTS = 240;
+export const ROAD_SEGMENTS = 420;
 /** Guardrails live on the exterior (ocean) edge of the loop. */
 export const ROAD_OCEAN_SIDE = -1;
 /** Cliffs rise on the interior of the loop. */
 export const ROAD_CLIFF_SIDE = 1;
 
 /**
- * Closed coastal circuit — a kidney-shaped loop so the lap never ends and the
- * car can never run off into the sea. Interior = central cliffs, exterior = ocean.
+ * Closed coastal circuit — a large stadium-style loop with two long straights
+ * (east + west) and sweeping ends, so a lap takes much longer and mixes flat-out
+ * straights with curves. Interior = central cliffs, exterior = ocean. The loop
+ * can never end and the lateral clamp keeps the car off the sea.
  */
 const ROAD_POINTS: Vector3[] = [
-  new Vector3(-52, 0.02, 58),
-  new Vector3(-14, 0.02, 80),
-  new Vector3(30, 0.02, 72),
-  new Vector3(58, 0.02, 36),
-  new Vector3(54, 0.02, -16),
-  new Vector3(26, 0.02, -58),
-  new Vector3(-20, 0.02, -70),
-  new Vector3(-56, 0.02, -36),
-  new Vector3(-64, 0.02, 12),
+  // East long straight (south → north)
+  new Vector3(120, 0.02, -170),
+  new Vector3(120, 0.02, -60),
+  new Vector3(120, 0.02, 60),
+  new Vector3(120, 0.02, 160),
+  // North sweep (east → west)
+  new Vector3(80, 0.02, 205),
+  new Vector3(0, 0.02, 215),
+  new Vector3(-80, 0.02, 205),
+  // West long straight (north → south)
+  new Vector3(-120, 0.02, 160),
+  new Vector3(-120, 0.02, 60),
+  new Vector3(-120, 0.02, -60),
+  new Vector3(-120, 0.02, -170),
+  // South sweep (west → east) with a gentle kink for character
+  new Vector3(-80, 0.02, -210),
+  new Vector3(-10, 0.02, -218),
+  new Vector3(70, 0.02, -205),
 ];
 
 const _point = new Vector3();
@@ -67,10 +78,10 @@ export function getRoadSurfaceAt(x: number, z: number, out: RoadSurfaceSample): 
   let bestT = 0;
   let bestDist = Infinity;
 
-  // 240 samples → ~1.5 unit spacing along the circuit; accurate enough for the
-  // analytic lateral projection used by the kinematic vehicle clamp.
-  for (let i = 0; i < 240; i++) {
-    const t = i / 240;
+  // 480 samples keep the nearest-point search accurate on the larger circuit
+  // (used by the kinematic vehicle's lateral clamp and terrain shaping).
+  for (let i = 0; i < 480; i++) {
+    const t = i / 480;
     curve.getPoint(t, _point);
     const dx = _point.x - x;
     const dz = _point.z - z;

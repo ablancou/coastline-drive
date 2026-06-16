@@ -54,7 +54,7 @@ export function CoastalScene() {
         material={oceanMaterial}
         receiveShadow
       >
-        <planeGeometry args={[400, 400, 1, 1]} />
+        <planeGeometry args={[1200, 1200, 1, 1]} />
       </mesh>
     </group>
   );

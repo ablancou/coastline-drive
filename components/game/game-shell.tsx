@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SkySwitcher } from "@/components/game/sky-switcher";
 import { StartScreen } from "@/components/game/start-screen";
 import { Hud } from "@/components/ui/hud";
+import { pauseEngineAudio } from "@/game/procedural/audio/engine-audio";
 
 const GameCanvas = dynamic(
   () => import("@/components/game/game-canvas").then((m) => m.GameCanvas),
@@ -15,6 +16,11 @@ const GameCanvas = dynamic(
 export function GameShell() {
   const [started, setStarted] = useState(false);
 
+  const handleExit = () => {
+    pauseEngineAudio();
+    setStarted(false);
+  };
+
   return (
     <main className="app">
       <div className="app__canvas">
@@ -22,7 +28,13 @@ export function GameShell() {
       </div>
       <Hud />
       <SkySwitcher />
-      {started ? null : <StartScreen onStart={() => setStarted(true)} />}
+      {started ? (
+        <button className="exit-btn" onClick={handleExit} aria-label="Exit to menu">
+          ✕ EXIT
+        </button>
+      ) : (
+        <StartScreen onStart={() => setStarted(true)} />
+      )}
     </main>
   );
 }

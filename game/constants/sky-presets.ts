@@ -19,11 +19,11 @@ const HDRI_DIR = "/assets/third-party/hdri";
 
 export const SKY_PRESETS: SkyPreset[] = [
   {
-    id: "golden_bay",
-    label: "Acapulco · bahía dorada",
-    file: `${HDRI_DIR}/golden_bay_2k.hdr`,
-    environmentIntensity: 1.1,
-    backgroundIntensity: 1.0,
+    id: "secluded_beach",
+    label: "Acapulco · atardecer",
+    file: `${HDRI_DIR}/secluded_beach_2k.hdr`,
+    environmentIntensity: 1.3,
+    backgroundIntensity: 1.15,
   },
   {
     id: "blue_lagoon",

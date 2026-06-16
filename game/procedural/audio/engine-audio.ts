@@ -15,6 +15,7 @@ interface EngineAudioGraph {
   lowpass: BiquadFilterNode;
   tireGain: GainNode;
   windGain: GainNode;
+  noise: AudioBuffer;
 }
 
 const cfg = VEHICLE_CONFIG;
@@ -102,6 +103,7 @@ function build(): EngineAudioGraph {
     lowpass,
     tireGain,
     windGain,
+    noise,
   };
 }
 
@@ -119,8 +121,57 @@ export function startEngineAudio(): void {
   }
 }
 
+export function pauseEngineAudio(): void {
+  if (!graph) return;
+  running = false;
+  const now = graph.ctx.currentTime;
+  graph.master.gain.setTargetAtTime(0, now, 0.15);
+  // Suspend slightly after the fade so it doesn't click.
+  window.setTimeout(() => {
+    if (!running && graph) void graph.ctx.suspend();
+  }, 250);
+}
+
 export function isEngineAudioRunning(): boolean {
   return running && !!graph;
+}
+
+/**
+ * One-shot collision sound — a filtered noise burst (scrape/crash) plus a low
+ * body thud. `intensity` 0..1 scales loudness and brightness.
+ */
+export function playImpact(intensity: number): void {
+  if (!graph || !running) return;
+  const g = graph;
+  const t = g.ctx.currentTime;
+  const vol = Math.min(0.9, Math.max(0.12, intensity));
+
+  // Crash/scrape: noise burst through a band/lowpass with a fast decay.
+  const src = new AudioBufferSourceNode(g.ctx, { buffer: g.noise });
+  const filt = new BiquadFilterNode(g.ctx, {
+    type: "lowpass",
+    frequency: 900 + intensity * 2600,
+    Q: 1,
+  });
+  const env = new GainNode(g.ctx, { gain: 0 });
+  src.connect(filt).connect(env).connect(g.master);
+  env.gain.setValueAtTime(0.0001, t);
+  env.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+  env.gain.exponentialRampToValueAtTime(0.0008, t + 0.32);
+  src.start(t);
+  src.stop(t + 0.36);
+
+  // Body thud: low triangle with a quick pitch drop.
+  const thud = new OscillatorNode(g.ctx, { type: "triangle", frequency: 90 });
+  const thudGain = new GainNode(g.ctx, { gain: 0 });
+  thud.connect(thudGain).connect(g.master);
+  thud.frequency.setValueAtTime(90, t);
+  thud.frequency.exponentialRampToValueAtTime(38, t + 0.18);
+  thudGain.gain.setValueAtTime(0.0001, t);
+  thudGain.gain.exponentialRampToValueAtTime(vol * 0.8, t + 0.01);
+  thudGain.gain.exponentialRampToValueAtTime(0.0008, t + 0.25);
+  thud.start(t);
+  thud.stop(t + 0.28);
 }
 
 export function setEngineAudioMuted(value: boolean): void {

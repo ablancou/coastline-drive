@@ -138,6 +138,41 @@ body {
   text-align: center;
 }
 
+/* ---- Exit-to-menu button ---- */
+.exit-btn {
+  position: absolute;
+  top: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  padding: 0.5rem 1.15rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #e8eef4;
+  background: rgba(10, 15, 20, 0.55);
+  border: 1px solid rgba(200, 212, 224, 0.16);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.exit-btn:hover,
+.exit-btn:focus-visible {
+  background: rgba(232, 93, 74, 0.22);
+  border-color: rgba(232, 93, 74, 0.5);
+  outline: none;
+}
+
+.exit-btn:active {
+  transform: translateX(-50%) scale(0.97);
+}
+
 /* ---- Sky-switcher toast ---- */
 .sky-toast {
   position: absolute;

@@ -6,6 +6,8 @@ export interface VehicleTargetState {
   quaternion: Quaternion;
   velocity: Vector3;
   active: boolean;
+  /** Transient camera-shake intensity (set on impact, decayed by the camera). */
+  shake: number;
 }
 
 export const vehicleTarget: VehicleTargetState = {
@@ -13,6 +15,7 @@ export const vehicleTarget: VehicleTargetState = {
   quaternion: new Quaternion(),
   velocity: new Vector3(),
   active: false,
+  shake: 0,
 };
 
 export function updateVehicleTarget(

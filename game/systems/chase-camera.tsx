@@ -47,6 +47,18 @@ export function ChaseCamera() {
 
     camera.position.lerp(_pose.position, posAlpha);
     lookPoint.current.lerp(_pose.lookAt, lookAlpha);
+
+    // Impact shake — random jitter scaled by the transient shake value.
+    if (vehicleTarget.shake > 0.001) {
+      const s = vehicleTarget.shake;
+      camera.position.x += (Math.random() - 0.5) * s;
+      camera.position.y += (Math.random() - 0.5) * s;
+      camera.position.z += (Math.random() - 0.5) * s;
+      vehicleTarget.shake *= Math.exp(-12 * delta);
+    } else {
+      vehicleTarget.shake = 0;
+    }
+
     camera.lookAt(lookPoint.current);
   });
 

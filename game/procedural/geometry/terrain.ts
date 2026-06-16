@@ -1,5 +1,13 @@
 import { BufferAttribute, BufferGeometry, PlaneGeometry } from "three";
-import { getLateralOffsetFromRoad } from "@/game/procedural/geometry/road-path";
+import {
+  getLateralOffsetFromRoad,
+  ROAD_WIDTH,
+} from "@/game/procedural/geometry/road-path";
+
+/** Road spline surface height (ROAD_POINTS are at y = 0.02). */
+const ROAD_SURFACE_Y = 0.02;
+/** Flat corridor half-width (road + shoulder) kept below the asphalt. */
+const ROAD_CORRIDOR_HALF = ROAD_WIDTH * 0.5 + 1.5;
 
 function noise2D(x: number, z: number): number {
   return (
@@ -25,15 +33,25 @@ export function cliffHeightAt(x: number, z: number): number {
   const cliffSteepness = cliffMask * cliffMask * 12;
   const baseNoise = fractalNoise(x, z) * (2 + cliffMask * 4);
   const oceanShelf = Math.max(0, -lateral - 6) * 0.15;
+  const natural = baseNoise + cliffSteepness - oceanShelf - 1.1;
 
-  return baseNoise + cliffSteepness - oceanShelf - 1.1;
+  // Carve a flat corridor under the road so terrain never pokes through the
+  // asphalt (prevents the green z-fighting patches). Sits just below road level
+  // and smoothly blends into the natural terrain past the shoulder.
+  const corridorFloor = ROAD_SURFACE_Y - 0.25;
+  const absLat = Math.abs(lateral);
+  if (absLat <= ROAD_CORRIDOR_HALF) return corridorFloor;
+
+  const k = Math.min(1, (absLat - ROAD_CORRIDOR_HALF) / 6);
+  const blend = k * k * (3 - 2 * k); // smoothstep
+  return corridorFloor * (1 - blend) + natural * blend;
 }
 
 /** Coastal cliff terrain — road-aware height + vertex color strata. */
 export function createTerrainGeometry(
-  width = 220,
-  depth = 260,
-  segments = 96,
+  width = 340,
+  depth = 560,
+  segments = 150,
 ): BufferGeometry {
   const geometry = new PlaneGeometry(width, depth, segments, segments);
   geometry.rotateX(-Math.PI / 2);
