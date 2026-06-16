@@ -6,32 +6,47 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   SphereGeometry,
+  TorusGeometry,
   type Object3D,
 } from "three";
+import { createDriverFigure } from "@/game/procedural/geometry/driver";
 
 /**
- * Restomod European GT — composed from primitives, no imported GLTF.
- * Sculpted silhouette: low wide body, flared arches, fastback greenhouse,
- * chrome trim, emissive lighting. Paint uses a clearcoat physical material so
- * the procedural environment map reads as deep automotive lacquer.
+ * Elegant convertible grand-tourer — open cockpit roadster composed from
+ * primitives (no GLTF). Exposes its paint material and driver figures via
+ * `userData` so the controller can recolor the car and swap the driver at
+ * runtime:
+ *   group.userData.paintMaterial : MeshPhysicalMaterial
+ *   group.userData.driverMan / driverWoman : Object3D (toggle visibility)
  */
-export function createVehicleBodyGroup(): Object3D {
+export function createVehicleBodyGroup(colorHex: string | number = 0xb10f1a): Object3D {
   const group = new Group();
 
-  // Signature "Coastline Rosso" — deep metallic red with a clearcoat lacquer.
   const paint = new MeshPhysicalMaterial({
-    color: 0xb10f1a,
+    color: colorHex,
     metalness: 0.55,
-    roughness: 0.32,
+    roughness: 0.3,
     clearcoat: 1,
     clearcoatRoughness: 0.08,
-    envMapIntensity: 1.25,
+    envMapIntensity: 1.3,
   });
 
   const carbon = new MeshStandardMaterial({
     color: 0x14171c,
     metalness: 0.5,
     roughness: 0.45,
+  });
+
+  const interior = new MeshStandardMaterial({
+    color: 0x1b1d22,
+    metalness: 0.2,
+    roughness: 0.7,
+  });
+
+  const leather = new MeshStandardMaterial({
+    color: 0x2a2520,
+    metalness: 0.1,
+    roughness: 0.6,
   });
 
   const chrome = new MeshStandardMaterial({
@@ -47,7 +62,7 @@ export function createVehicleBodyGroup(): Object3D {
     roughness: 0.06,
     transmission: 0.6,
     transparent: true,
-    opacity: 0.55,
+    opacity: 0.5,
     envMapIntensity: 1.4,
   });
 
@@ -68,7 +83,7 @@ export function createVehicleBodyGroup(): Object3D {
   });
 
   const add = (
-    geo: BoxGeometry | CylinderGeometry | SphereGeometry,
+    geo: BoxGeometry | CylinderGeometry | SphereGeometry | TorusGeometry,
     mat: MeshStandardMaterial | MeshPhysicalMaterial,
     x: number,
     y: number,
@@ -82,79 +97,102 @@ export function createVehicleBodyGroup(): Object3D {
     return mesh;
   };
 
-  // --- Lower body / floor pan (wide, low) ---
-  add(new BoxGeometry(1.88, 0.34, 4.0), paint, 0, 0.06, 0);
+  // --- Lower hull (wide, low) ---
+  add(new BoxGeometry(1.88, 0.36, 4.0), paint, 0, 0.06, 0);
 
-  // --- Upper body shoulder line (tapered narrower on top) ---
-  const shoulder = add(new BoxGeometry(1.74, 0.3, 3.7), paint, 0, 0.32, -0.02);
-  shoulder.scale.z = 1.0;
+  // --- Long hood with a subtle slope + vents ---
+  const hood = add(new BoxGeometry(1.66, 0.16, 1.7), paint, 0, 0.34, 1.25);
+  hood.rotation.x = -0.04;
+  add(new BoxGeometry(0.34, 0.04, 0.6), carbon, -0.36, 0.43, 1.2);
+  add(new BoxGeometry(0.34, 0.04, 0.6), carbon, 0.36, 0.43, 1.2);
 
-  // --- Long hood with a subtle slope ---
-  const hood = add(new BoxGeometry(1.62, 0.16, 1.55), paint, 0, 0.45, 1.25);
-  hood.rotation.x = -0.05;
-  // Hood vents
-  add(new BoxGeometry(0.34, 0.04, 0.5), carbon, -0.36, 0.54, 1.2);
-  add(new BoxGeometry(0.34, 0.04, 0.5), carbon, 0.36, 0.54, 1.2);
+  // --- Cowl / dashboard in front of the open cockpit ---
+  add(new BoxGeometry(1.6, 0.18, 0.4), paint, 0, 0.36, 0.62);
+  add(new BoxGeometry(1.42, 0.12, 0.24), interior, 0, 0.42, 0.5); // dash top
 
-  // --- Fastback cabin ---
-  const cabin = add(new BoxGeometry(1.46, 0.46, 1.7), paint, 0, 0.6, -0.25);
-  cabin.scale.set(1, 1, 1);
-  // Roof (slightly narrower → coupe taper)
-  const roof = add(new BoxGeometry(1.28, 0.12, 1.3), paint, 0, 0.86, -0.3);
-  roof.scale.x = 1;
+  // --- Door-top side panels (leave the centre open = convertible cockpit) ---
+  add(new BoxGeometry(0.2, 0.22, 1.9), paint, -0.84, 0.33, -0.2);
+  add(new BoxGeometry(0.2, 0.22, 1.9), paint, 0.84, 0.33, -0.2);
 
-  // --- Greenhouse glass ---
-  const windshield = add(new BoxGeometry(1.3, 0.5, 0.08), glass, 0, 0.74, 0.62);
-  windshield.rotation.x = -0.62;
-  const rearGlass = add(new BoxGeometry(1.26, 0.46, 0.08), glass, 0, 0.74, -1.08);
-  rearGlass.rotation.x = 0.7;
-  // Side windows
-  add(new BoxGeometry(0.04, 0.34, 1.34), glass, -0.72, 0.74, -0.3);
-  add(new BoxGeometry(0.04, 0.34, 1.34), glass, 0.72, 0.74, -0.3);
-
-  // --- Rear fastback deck + ducktail ---
-  const deck = add(new BoxGeometry(1.66, 0.22, 1.0), paint, 0, 0.5, -1.55);
-  deck.rotation.x = 0.16;
-
-  // --- Wheel arches (flared fenders) ---
-  const archGeo = new CylinderGeometry(0.5, 0.5, 0.36, 16, 1, true, 0, Math.PI);
-  const archPositions: [number, number, number][] = [
-    [-0.92, 0.16, 1.42],
-    [0.92, 0.16, 1.42],
-    [-0.92, 0.16, -1.4],
-    [0.92, 0.16, -1.4],
-  ];
-  for (const [ax, ay, az] of archPositions) {
-    const arch = add(archGeo, carbon, ax, ay, az);
-    arch.rotation.z = Math.PI / 2;
-    arch.scale.set(1, 1, 1.05);
+  // --- Cockpit interior tub + seats ---
+  add(new BoxGeometry(1.42, 0.08, 1.9), interior, 0, 0.26, -0.2); // floor
+  // Two seats (driver left, passenger right)
+  for (const sx of [-0.42, 0.42]) {
+    add(new BoxGeometry(0.5, 0.12, 0.5), leather, sx, 0.34, -0.42); // cushion
+    add(new BoxGeometry(0.5, 0.46, 0.12), leather, sx, 0.56, -0.66); // backrest
+    add(new BoxGeometry(0.3, 0.16, 0.1), leather, sx, 0.82, -0.66); // headrest
   }
 
-  // --- Front fascia: splitter, grille, chrome bumper ---
-  add(new BoxGeometry(1.9, 0.08, 0.34), carbon, 0, -0.06, 2.0); // splitter
-  add(new BoxGeometry(1.3, 0.26, 0.1), carbon, 0, 0.18, 2.04); // grille
-  add(new BoxGeometry(1.84, 0.06, 0.12), chrome, 0, 0.34, 2.02); // chrome lip
+  // --- Steering wheel in front of the driver (left seat) ---
+  const wheel = add(new TorusGeometry(0.16, 0.025, 10, 20), carbon, -0.42, 0.5, 0.16);
+  wheel.rotation.x = Math.PI / 2 - 0.5;
+  const column = add(new CylinderGeometry(0.02, 0.02, 0.22, 8), carbon, -0.42, 0.45, 0.28);
+  column.rotation.x = Math.PI / 2 - 0.5;
 
-  // Headlights (emissive)
-  add(new SphereGeometry(0.16, 16, 12), headlight, -0.66, 0.3, 1.96);
-  add(new SphereGeometry(0.16, 16, 12), headlight, 0.66, 0.3, 1.96);
+  // --- Low raked windshield frame + glass ---
+  const wsFrame = add(new BoxGeometry(1.34, 0.04, 0.36), chrome, 0, 0.56, 0.72);
+  wsFrame.rotation.x = -0.7;
+  const windshield = add(new BoxGeometry(1.28, 0.3, 0.04), glass, 0, 0.6, 0.7);
+  windshield.rotation.x = -0.7;
+
+  // --- Roll hoops behind the seats (elegant chrome) ---
+  for (const sx of [-0.42, 0.42]) {
+    const hoop = add(new TorusGeometry(0.2, 0.03, 8, 14, Math.PI), chrome, sx, 0.74, -0.9);
+    hoop.rotation.z = 0;
+  }
+
+  // --- Rear deck + ducktail ---
+  const deck = add(new BoxGeometry(1.7, 0.2, 1.1), paint, 0, 0.34, -1.5);
+  deck.rotation.x = 0.12;
+
+  // --- Wheel arches ---
+  const archGeo = new CylinderGeometry(0.5, 0.5, 0.36, 16, 1, true, 0, Math.PI);
+  for (const [ax, az] of [
+    [-0.92, 1.42],
+    [0.92, 1.42],
+    [-0.92, -1.4],
+    [0.92, -1.4],
+  ] as const) {
+    const arch = add(archGeo, carbon, ax, 0.16, az);
+    arch.rotation.z = Math.PI / 2;
+  }
+
+  // --- Front fascia: splitter, grille, chrome lip, headlights ---
+  add(new BoxGeometry(1.9, 0.08, 0.34), carbon, 0, -0.06, 2.0);
+  add(new BoxGeometry(1.3, 0.26, 0.1), carbon, 0, 0.18, 2.04);
+  add(new BoxGeometry(1.84, 0.06, 0.12), chrome, 0, 0.32, 2.02);
+  add(new SphereGeometry(0.15, 16, 12), headlight, -0.66, 0.28, 1.96);
+  add(new SphereGeometry(0.15, 16, 12), headlight, 0.66, 0.28, 1.96);
 
   // --- Rear fascia: light bar, diffuser, exhausts ---
-  add(new BoxGeometry(1.64, 0.16, 0.06), taillight, 0, 0.42, -2.02); // full-width light bar
-  add(new BoxGeometry(1.7, 0.12, 0.3), carbon, 0, 0.04, -1.98); // diffuser
+  add(new BoxGeometry(1.64, 0.16, 0.06), taillight, 0, 0.4, -2.02);
+  add(new BoxGeometry(1.7, 0.12, 0.3), carbon, 0, 0.02, -1.98);
   const exhaust = new CylinderGeometry(0.07, 0.07, 0.22, 12);
   const exL = add(exhaust, chrome, -0.42, -0.04, -2.08);
   exL.rotation.x = Math.PI / 2;
   const exR = add(exhaust, chrome, 0.42, -0.04, -2.08);
   exR.rotation.x = Math.PI / 2;
 
-  // --- Side mirrors ---
-  add(new BoxGeometry(0.16, 0.1, 0.14), carbon, -0.86, 0.66, 0.5);
-  add(new BoxGeometry(0.16, 0.1, 0.14), carbon, 0.86, 0.66, 0.5);
-
-  // --- Rocker / side skirts ---
+  // --- Side mirrors + rocker skirts ---
+  add(new BoxGeometry(0.16, 0.1, 0.14), carbon, -0.92, 0.5, 0.55);
+  add(new BoxGeometry(0.16, 0.1, 0.14), carbon, 0.92, 0.5, 0.55);
   add(new BoxGeometry(0.12, 0.12, 2.6), carbon, -0.94, -0.06, -0.1);
   add(new BoxGeometry(0.12, 0.12, 2.6), carbon, 0.94, -0.06, -0.1);
+
+  // --- Driver figures (left seat) — toggled by the controller ---
+  const seatPos = { x: -0.42, y: 0.18, z: -0.4 };
+  const driverMan = createDriverFigure("man");
+  const driverWoman = createDriverFigure("woman");
+  for (const d of [driverMan, driverWoman]) {
+    d.position.set(seatPos.x, seatPos.y, seatPos.z);
+    d.scale.setScalar(0.82);
+    group.add(d);
+  }
+  driverWoman.visible = false;
+
+  group.userData.paintMaterial = paint;
+  group.userData.driverMan = driverMan;
+  group.userData.driverWoman = driverWoman;
 
   return group;
 }

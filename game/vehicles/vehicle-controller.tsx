@@ -23,7 +23,9 @@ import { applyRaycastSuspension } from "@/game/physics/suspension-raycast";
 import { createInputSystem } from "@/game/systems/input-system";
 import { updateVehicleTarget, vehicleTarget } from "@/game/systems/vehicle-target";
 import { clamp, finiteOr, wrapAngle } from "@/lib/math";
+import { useCustomizationStore } from "@/stores/customization-store";
 import { useTelemetryStore } from "@/stores/telemetry-store";
+import type { MeshPhysicalMaterial } from "three";
 import type { InputState } from "@/types/input";
 import type { VehicleSimState } from "@/types/vehicle";
 
@@ -92,10 +94,27 @@ export function VehicleController() {
     simRef.current.velAngle = spawnPose.rotationY;
   }, [spawnPose]);
 
+  const carColor = useCustomizationStore((s) => s.carColor);
+  const driver = useCustomizationStore((s) => s.driver);
+
   useEffect(() => {
     inputSystem.bind();
     return () => inputSystem.unbind();
   }, [inputSystem]);
+
+  // Apply paint color (runtime, no rebuild).
+  useEffect(() => {
+    const paint = bodyGroup.userData.paintMaterial as MeshPhysicalMaterial | undefined;
+    paint?.color.set(carColor);
+  }, [bodyGroup, carColor]);
+
+  // Swap driver figure.
+  useEffect(() => {
+    const man = bodyGroup.userData.driverMan as Object3D | undefined;
+    const woman = bodyGroup.userData.driverWoman as Object3D | undefined;
+    if (man) man.visible = driver === "man";
+    if (woman) woman.visible = driver === "woman";
+  }, [bodyGroup, driver]);
 
   useBeforePhysicsStep(() => {
     const chassis = chassisRef.current;
