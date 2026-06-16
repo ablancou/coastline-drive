@@ -1,0 +1,85 @@
+import { BufferAttribute, BufferGeometry, PlaneGeometry } from "three";
+import { getLateralOffsetFromRoad } from "@/game/procedural/geometry/road-path";
+
+function noise2D(x: number, z: number): number {
+  return (
+    Math.sin(x * 0.11) * Math.cos(z * 0.08) * 1.2 +
+    Math.sin(x * 0.04 + z * 0.05) * 0.9 +
+    Math.sin(x * 0.23 + z * 0.17) * 0.35
+  );
+}
+
+function fractalNoise(x: number, z: number): number {
+  return (
+    noise2D(x, z) * 0.55 +
+    noise2D(x * 2.1, z * 2.1) * 0.3 +
+    noise2D(x * 4.4, z * 4.4) * 0.15
+  );
+}
+
+/** Shared height sampler for terrain mesh and cliff rocks. */
+export function cliffHeightAt(x: number, z: number): number {
+  const lateral = getLateralOffsetFromRoad(x, z);
+  const inland = Math.max(0, lateral - 5);
+  const cliffMask = Math.min(1, inland / 18);
+  const cliffSteepness = cliffMask * cliffMask * 12;
+  const baseNoise = fractalNoise(x, z) * (2 + cliffMask * 4);
+  const oceanShelf = Math.max(0, -lateral - 6) * 0.15;
+
+  return baseNoise + cliffSteepness - oceanShelf - 1.1;
+}
+
+/** Coastal cliff terrain — road-aware height + vertex color strata. */
+export function createTerrainGeometry(
+  width = 220,
+  depth = 260,
+  segments = 96,
+): BufferGeometry {
+  const geometry = new PlaneGeometry(width, depth, segments, segments);
+  geometry.rotateX(-Math.PI / 2);
+
+  const positions = geometry.attributes.position;
+  if (!positions) return geometry;
+
+  const colors = new Float32Array(positions.count * 3);
+
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i);
+    const z = positions.getZ(i);
+    const height = cliffHeightAt(x, z);
+    positions.setY(i, height);
+
+    const lateral = getLateralOffsetFromRoad(x, z);
+    const slope = Math.min(1, Math.max(0, (height + 0.5) / 10));
+    const inland = Math.max(0, lateral - 4);
+
+    let r = 0.28;
+    let g = 0.42;
+    let b = 0.24;
+
+    if (inland > 2) {
+      r = 0.36 + slope * 0.12;
+      g = 0.34 + slope * 0.05;
+      b = 0.28 + slope * 0.04;
+    }
+    if (inland > 10) {
+      r = 0.42 + fractalNoise(x, z) * 0.06;
+      g = 0.4 + fractalNoise(z, x) * 0.05;
+      b = 0.36;
+    }
+    if (lateral < -6) {
+      r = 0.62;
+      g = 0.56;
+      b = 0.42;
+    }
+
+    colors[i * 3] = r;
+    colors[i * 3 + 1] = g;
+    colors[i * 3 + 2] = b;
+  }
+
+  positions.needsUpdate = true;
+  geometry.setAttribute("color", new BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+}

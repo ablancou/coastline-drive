@@ -1,0 +1,177 @@
+import { VEHICLE_CONFIG } from "@/game/constants/vehicle";
+
+/**
+ * Procedural engine + tire/wind audio via the Web Audio API — zero sample files.
+ * Built as a lazy singleton: the AudioContext is only created after a user
+ * gesture (browser autoplay policy), then driven from telemetry each frame.
+ */
+interface EngineAudioGraph {
+  ctx: AudioContext;
+  master: GainNode;
+  oscA: OscillatorNode;
+  oscB: OscillatorNode;
+  sub: OscillatorNode;
+  engineGain: GainNode;
+  lowpass: BiquadFilterNode;
+  tireGain: GainNode;
+  windGain: GainNode;
+}
+
+const cfg = VEHICLE_CONFIG;
+// Inline-6 firing order feel: firing freq = rpm/60 * cylinders/2.
+const FIRING_FACTOR = 3;
+
+let graph: EngineAudioGraph | null = null;
+let running = false;
+let muted = false;
+
+// Smoothed targets (updated each frame, ramped on the audio thread).
+let curFreq = 40;
+
+function makeNoiseBuffer(ctx: AudioContext): AudioBuffer {
+  const length = ctx.sampleRate * 2;
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+  return buffer;
+}
+
+function build(): EngineAudioGraph {
+  const Ctor =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext: typeof AudioContext })
+      .webkitAudioContext;
+  const ctx = new Ctor();
+
+  const master = new GainNode(ctx, { gain: 0.0 });
+  master.connect(ctx.destination);
+
+  // --- Engine: two detuned saws + a sub, shaped by a throttle-opening lowpass.
+  const lowpass = new BiquadFilterNode(ctx, {
+    type: "lowpass",
+    frequency: 600,
+    Q: 6,
+  });
+  const engineGain = new GainNode(ctx, { gain: 0.12 });
+  lowpass.connect(engineGain).connect(master);
+
+  const oscA = new OscillatorNode(ctx, { type: "sawtooth", frequency: 40 });
+  const oscB = new OscillatorNode(ctx, {
+    type: "sawtooth",
+    frequency: 80,
+    detune: 8,
+  });
+  const sub = new OscillatorNode(ctx, { type: "triangle", frequency: 40 });
+  oscA.connect(lowpass);
+  oscB.connect(lowpass);
+  sub.connect(engineGain);
+  oscA.start();
+  oscB.start();
+  sub.start();
+
+  // --- Tire/road + wind: filtered looping noise.
+  const noise = makeNoiseBuffer(ctx);
+
+  const tireSrc = new AudioBufferSourceNode(ctx, { buffer: noise, loop: true });
+  const tireBand = new BiquadFilterNode(ctx, {
+    type: "bandpass",
+    frequency: 1400,
+    Q: 1.2,
+  });
+  const tireGain = new GainNode(ctx, { gain: 0 });
+  tireSrc.connect(tireBand).connect(tireGain).connect(master);
+  tireSrc.start();
+
+  const windSrc = new AudioBufferSourceNode(ctx, { buffer: noise, loop: true });
+  const windLp = new BiquadFilterNode(ctx, {
+    type: "lowpass",
+    frequency: 500,
+    Q: 0.7,
+  });
+  const windGain = new GainNode(ctx, { gain: 0 });
+  windSrc.connect(windLp).connect(windGain).connect(master);
+  windSrc.start();
+
+  return {
+    ctx,
+    master,
+    oscA,
+    oscB,
+    sub,
+    engineGain,
+    lowpass,
+    tireGain,
+    windGain,
+  };
+}
+
+export function startEngineAudio(): void {
+  try {
+    if (!graph) graph = build();
+    void graph.ctx.resume();
+    running = true;
+    // Fade master in.
+    const now = graph.ctx.currentTime;
+    graph.master.gain.cancelScheduledValues(now);
+    graph.master.gain.setTargetAtTime(muted ? 0 : 0.5, now, 0.3);
+  } catch {
+    running = false;
+  }
+}
+
+export function isEngineAudioRunning(): boolean {
+  return running && !!graph;
+}
+
+export function setEngineAudioMuted(value: boolean): void {
+  muted = value;
+  if (!graph) return;
+  const now = graph.ctx.currentTime;
+  graph.master.gain.setTargetAtTime(muted ? 0 : 0.5, now, 0.1);
+}
+
+export function toggleEngineAudioMuted(): boolean {
+  setEngineAudioMuted(!muted);
+  return muted;
+}
+
+/**
+ * Drive the audio from telemetry. Called every frame from inside the Canvas.
+ * All ramps happen on the audio thread for click-free, smooth response.
+ */
+export function updateEngineAudio(
+  rpm: number,
+  speedKmh: number,
+  throttle: number,
+  handbrake: boolean,
+  steerAbs: number,
+): void {
+  if (!graph || !running) return;
+  const g = graph;
+  const t = g.ctx.currentTime;
+
+  const safeRpm = Number.isFinite(rpm) ? rpm : cfg.idleRpm;
+  const safeSpeed = Number.isFinite(speedKmh) ? Math.max(0, speedKmh) : 0;
+  const thr = Number.isFinite(throttle) ? Math.min(1, Math.max(0, throttle)) : 0;
+  const steer = Number.isFinite(steerAbs) ? Math.min(1, Math.abs(steerAbs)) : 0;
+
+  // Engine pitch from firing frequency, smoothed.
+  const targetFreq = (safeRpm / 60) * FIRING_FACTOR;
+  curFreq += (targetFreq - curFreq) * 0.25;
+  g.oscA.frequency.setTargetAtTime(curFreq, t, 0.03);
+  g.oscB.frequency.setTargetAtTime(curFreq * 2, t, 0.03);
+  g.sub.frequency.setTargetAtTime(curFreq * 0.5, t, 0.05);
+
+  // Throttle opens the filter (brighter under load) and lifts engine gain.
+  const rpmNorm = Math.min(1, safeRpm / cfg.maxRpm);
+  g.lowpass.frequency.setTargetAtTime(500 + rpmNorm * 3200 + thr * 1600, t, 0.05);
+  g.engineGain.gain.setTargetAtTime(0.1 + thr * 0.14, t, 0.08);
+
+  // Wind grows with speed; tire roll + screech with speed and cornering/handbrake.
+  const speedNorm = Math.min(1, safeSpeed / 220);
+  g.windGain.gain.setTargetAtTime(speedNorm * 0.18, t, 0.1);
+
+  const screech = (handbrake ? 0.5 : 0) + steer * speedNorm * 0.5;
+  const tireBase = speedNorm * 0.06;
+  g.tireGain.gain.setTargetAtTime(tireBase + screech * speedNorm * 0.3, t, 0.06);
+}

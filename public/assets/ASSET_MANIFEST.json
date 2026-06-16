@@ -1,0 +1,60 @@
+{
+  "$schema": "./asset-manifest.schema.json",
+  "policy": "CC0 and Public Domain only. Procedural assets are not listed here.",
+  "assets": [
+    {
+      "id": "hdri-golden-bay",
+      "file": "third-party/hdri/golden_bay_2k.hdr",
+      "source": "https://polyhaven.com/a/golden_bay",
+      "license": "CC0",
+      "author": "Poly Haven",
+      "addedAt": "2026-06-16",
+      "usage": "Sky preset 'Acapulco · bahía dorada' (default) — background + IBL."
+    },
+    {
+      "id": "hdri-blue-lagoon",
+      "file": "third-party/hdri/blue_lagoon_2k.hdr",
+      "source": "https://polyhaven.com/a/blue_lagoon",
+      "license": "CC0",
+      "author": "Poly Haven",
+      "addedAt": "2026-06-16",
+      "usage": "Sky preset 'Cancún · turquesa tropical'."
+    },
+    {
+      "id": "hdri-fish-hoek-beach",
+      "file": "third-party/hdri/fish_hoek_beach_2k.hdr",
+      "source": "https://polyhaven.com/a/fish_hoek_beach",
+      "license": "CC0",
+      "author": "Poly Haven",
+      "addedAt": "2026-06-16",
+      "usage": "Sky preset 'Los Cabos · costa abierta'."
+    },
+    {
+      "id": "hdri-venice-sunset",
+      "file": "third-party/hdri/venice_sunset_2k.hdr",
+      "source": "https://polyhaven.com/a/venice_sunset",
+      "license": "CC0",
+      "author": "Poly Haven",
+      "addedAt": "2026-06-16",
+      "usage": "Sky preset 'Niza · atardecer Riviera'."
+    },
+    {
+      "id": "hdri-cloudy-cliffside-road",
+      "file": "third-party/hdri/cloudy_cliffside_road_2k.hdr",
+      "source": "https://polyhaven.com/a/cloudy_cliffside_road",
+      "license": "CC0",
+      "author": "Poly Haven",
+      "addedAt": "2026-06-16",
+      "usage": "Sky preset 'Positano · acantilado'."
+    },
+    {
+      "id": "hdri-blouberg-sunrise-1",
+      "file": "third-party/hdri/blouberg_sunrise_1_2k.hdr",
+      "source": "https://polyhaven.com/a/blouberg_sunrise_1",
+      "license": "CC0",
+      "author": "Poly Haven",
+      "addedAt": "2026-06-16",
+      "usage": "Sky preset 'Portofino · amanecer'."
+    }
+  ]
+}

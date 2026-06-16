@@ -1,0 +1,2 @@
+export const GAMEPAD_DEADZONE = 0.12;
+export const TELEMETRY_FLUSH_INTERVAL = 0.1;
