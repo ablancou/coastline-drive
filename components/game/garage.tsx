@@ -1,5 +1,6 @@
 "use client";
 
+import { DestinationGlobe } from "@/components/game/destination-globe";
 import { SiteFooter } from "@/components/game/site-footer";
 import { CAR_COLORS } from "@/game/constants/customization";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
@@ -11,13 +12,10 @@ interface GarageProps {
   onBack: () => void;
 }
 
-const REGIONS = ["México", "Europa"] as const;
-
 /** Configurator page — car color, driver, and destination (track). */
 export function Garage({ onStart, onBack }: GarageProps) {
   const { carColor, driver, setCarColor, setDriver } = useCustomizationStore();
   const skyIndex = useSceneStore((s) => s.skyIndex);
-  const setSky = useSceneStore((s) => s.setSky);
 
   return (
     <div className="garage">
@@ -68,27 +66,12 @@ export function Garage({ onStart, onBack }: GarageProps) {
             </div>
           </section>
 
-          <section className="garage__section">
-            <span className="custom__label">DESTINO</span>
-            {REGIONS.map((region) => (
-              <div key={region} className="dest-group">
-                <span className="dest-region">{region}</span>
-                <div className="dest-grid">
-                  {SKY_PRESETS.map((preset, i) =>
-                    preset.region === region ? (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        className={`dest-card${skyIndex === i ? " dest-card--active" : ""}`}
-                        onClick={() => setSky(i)}
-                      >
-                        {preset.label}
-                      </button>
-                    ) : null,
-                  )}
-                </div>
-              </div>
-            ))}
+          <section className="garage__section garage__section--center">
+            <span className="custom__label">DESTINO · gira el globo y toca un pin</span>
+            <DestinationGlobe />
+            <span className="dest-selected">
+              {SKY_PRESETS[skyIndex % SKY_PRESETS.length]?.label}
+            </span>
           </section>
         </div>
 

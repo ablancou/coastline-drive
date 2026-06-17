@@ -678,3 +678,44 @@ body {
   align-self: center;
   margin-top: 0.3rem;
 }
+
+/* ---- Destination globe (Garage) ---- */
+.garage__section--center {
+  align-items: center;
+  width: 100%;
+}
+
+.globe-wrap {
+  width: 100%;
+  height: 300px;
+  cursor: grab;
+}
+
+.globe-wrap:active {
+  cursor: grabbing;
+}
+
+.globe-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(10, 15, 22, 0.85);
+  border: 1px solid rgba(159, 196, 255, 0.4);
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+  transform: translateY(-1.4rem);
+}
+
+.dest-selected {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #9fc4ff;
+}
+
+@media (max-height: 560px) {
+  .globe-wrap {
+    height: 220px;
+  }
+}
