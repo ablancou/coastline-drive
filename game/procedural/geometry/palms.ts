@@ -4,6 +4,7 @@ import {
   Group,
   Mesh,
   MeshStandardMaterial,
+  SphereGeometry,
   Vector3,
 } from "three";
 import {
@@ -21,10 +22,13 @@ function hash01(i: number, salt: number): number {
 /** Scatter of procedural palm trees on the interior (land) side of the circuit. */
 export function buildPalms(count = 34): Group {
   const root = new Group();
-  const trunkMat = new MeshStandardMaterial({ color: 0x6b5031, roughness: 0.9 });
-  const frondMat = new MeshStandardMaterial({ color: 0x2f7d4f, roughness: 0.7 });
-  const trunkGeo = new CylinderGeometry(0.1, 0.2, 1, 7); // unit height; scaled per palm
-  const frondGeo = new ConeGeometry(0.32, 2.0, 4);
+  const trunkMat = new MeshStandardMaterial({ color: 0x7a5a36, roughness: 0.9 });
+  const frondMat = new MeshStandardMaterial({ color: 0x2f9d54, roughness: 0.65 });
+  const coconutMat = new MeshStandardMaterial({ color: 0x4a3520, roughness: 0.8 });
+  const trunkGeo = new CylinderGeometry(0.11, 0.22, 1, 8); // unit height; scaled per palm
+  // Long, slim, drooping frond (flattened cone).
+  const frondGeo = new ConeGeometry(0.26, 2.8, 4);
+  const coconutGeo = new SphereGeometry(0.1, 8, 6);
 
   const frame = { point: new Vector3(), tangent: new Vector3(), side: new Vector3() };
   const sign = getRoadInteriorSign();
@@ -46,18 +50,34 @@ export function buildPalms(count = 34): Group {
     trunk.castShadow = true;
     palm.add(trunk);
 
-    const crown = 7;
-    for (let k = 0; k < crown; k++) {
-      const holder = new Group();
-      holder.rotation.y = (k / crown) * Math.PI * 2 + hash01(i, 6.1);
-      holder.position.y = h - 0.15;
-      const frond = new Mesh(frondGeo, frondMat);
-      frond.rotation.x = Math.PI / 2 + 0.35; // splay outward + droop
-      frond.position.z = 0.85;
-      frond.scale.set(1, 1, 0.4);
-      frond.castShadow = true;
-      holder.add(frond);
-      palm.add(holder);
+    // Two tiers of drooping fronds for a fuller crown.
+    const tiers = [
+      { count: 6, droop: 0.2, reach: 1.05, y: h - 0.05 },
+      { count: 6, droop: 0.6, reach: 0.95, y: h - 0.22 },
+    ];
+    for (let tIdx = 0; tIdx < tiers.length; tIdx++) {
+      const tier = tiers[tIdx]!;
+      for (let k = 0; k < tier.count; k++) {
+        const holder = new Group();
+        holder.rotation.y =
+          (k / tier.count) * Math.PI * 2 + hash01(i, 6.1) + tIdx * 0.5;
+        holder.position.y = tier.y;
+        const frond = new Mesh(frondGeo, frondMat);
+        frond.rotation.x = Math.PI / 2 + tier.droop; // outward + droop
+        frond.position.z = tier.reach;
+        frond.scale.set(1, 1, 0.25); // flatten into a leaf
+        frond.castShadow = true;
+        holder.add(frond);
+        palm.add(holder);
+      }
+    }
+
+    // Coconut cluster under the crown.
+    for (let c = 0; c < 3; c++) {
+      const nut = new Mesh(coconutGeo, coconutMat);
+      const a = (c / 3) * Math.PI * 2;
+      nut.position.set(Math.cos(a) * 0.14, h - 0.3, Math.sin(a) * 0.14);
+      palm.add(nut);
     }
 
     palm.position.set(x, groundY, z);

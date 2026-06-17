@@ -1,23 +1,32 @@
 "use client";
 
 import { Environment } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
+import { useEffect } from "react";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { useSceneStore } from "@/stores/scene-store";
 
 /**
  * Real coastal sky + image-based lighting from CC0 Poly Haven HDRIs.
- * The HDRI provides BOTH the visible sky background and the reflections on the
- * car. The active preset is chosen in the scene store and can be cycled live
- * with the "N" key (see components/game/sky-switcher). Presets are defined in
- * game/constants/sky-presets and licensed in ASSET_MANIFEST.json.
+ * Active preset chosen in the scene store (Garage / "N" key). The sky is rotated
+ * per-preset so the sea lands correctly, and sunny destinations get a warmer,
+ * stronger key light for a hot, bright feel.
  */
 export function SkySetup() {
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const preset = SKY_PRESETS[skyIndex % SKY_PRESETS.length] ?? SKY_PRESETS[0]!;
+  const { scene } = useThree();
+
+  // Rotate sky + IBL so each destination's sea is oriented correctly.
+  useEffect(() => {
+    scene.backgroundRotation.set(0, preset.rotationY, 0);
+    scene.environmentRotation.set(0, preset.rotationY, 0);
+  }, [scene, preset]);
+
+  const sunny = preset.sunny;
 
   return (
     <>
-      {/* Sky-blue fallback shown only while an HDRI streams in. */}
       <color attach="background" args={["#bcd9ef"]} />
 
       <Environment
@@ -29,14 +38,13 @@ export function SkySetup() {
         environmentIntensity={preset.environmentIntensity}
       />
 
-      {/* Soft sky/ground bounce to lift shadow areas. */}
-      <hemisphereLight args={["#dcecff", "#3b3026", 0.25]} />
+      <hemisphereLight args={["#fff4e0", "#3b3026", sunny ? 0.4 : 0.25]} />
 
-      {/* Warm key sun — the single shadow caster. Aligned to a golden-hour feel. */}
+      {/* Warm key sun — hotter + stronger on sunny days. */}
       <directionalLight
-        position={[120, 90, 90]}
-        intensity={2.4}
-        color="#fff1d6"
+        position={[120, 110, 80]}
+        intensity={sunny ? 3.4 : 2.3}
+        color={sunny ? "#fff0c4" : "#fff1d6"}
         castShadow
         shadow-mapSize-width={4096}
         shadow-mapSize-height={4096}
@@ -48,7 +56,7 @@ export function SkySetup() {
         shadow-bias={-0.0004}
       />
 
-      <fog attach="fog" args={["#cfe0ec", 320, 900]} />
+      <fog attach="fog" args={[sunny ? "#dcecff" : "#cfe0ec", 340, 940]} />
     </>
   );
 }

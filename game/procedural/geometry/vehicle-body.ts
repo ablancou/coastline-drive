@@ -1,5 +1,7 @@
 import {
   BoxGeometry,
+  type BufferGeometry,
+  CapsuleGeometry,
   CylinderGeometry,
   ExtrudeGeometry,
   Group,
@@ -8,6 +10,7 @@ import {
   MeshStandardMaterial,
   Shape,
   SphereGeometry,
+  TorusGeometry,
   type Object3D,
 } from "three";
 import { createDriverFigure } from "@/game/procedural/geometry/driver";
@@ -37,7 +40,7 @@ function build550Shell(): ExtrudeGeometry {
   s.quadraticCurveTo(-2.12, -0.16, -2.0, -0.28); // close
   s.closePath();
 
-  const depth = 1.5;
+  const depth = 1.62;
   const geo = new ExtrudeGeometry(s, {
     depth,
     bevelEnabled: true,
@@ -97,7 +100,7 @@ export function createVehicleBodyGroup(colorHex: string | number = 0xb10f1a): Ob
 
   type V3 = [number, number, number];
   const add = (
-    geo: SphereGeometry | BoxGeometry | CylinderGeometry | ExtrudeGeometry,
+    geo: BufferGeometry,
     mat: MeshStandardMaterial | MeshPhysicalMaterial,
     pos: V3,
     scale: V3 = [1, 1, 1],
@@ -116,15 +119,21 @@ export function createVehicleBodyGroup(colorHex: string | number = 0xb10f1a): Ob
   // --- Sculpted body shell (extruded 550 profile) ---
   add(build550Shell(), paint, [0, 0, 0]);
 
-  // --- Pontoon fenders over the wheels ---
-  add(unit, paint, [-0.86, 0.0, 1.4], [0.34, 0.3, 0.62]);
-  add(unit, paint, [0.86, 0.0, 1.4], [0.34, 0.3, 0.62]);
-  add(unit, paint, [-0.9, 0.02, -1.38], [0.36, 0.32, 0.68]);
-  add(unit, paint, [0.9, 0.02, -1.38], [0.36, 0.32, 0.68]);
+  // --- Slim arched fender guards over the wheels (not blobs) ---
+  const fenderGeo = new TorusGeometry(0.46, 0.12, 8, 16, Math.PI);
+  for (const [fx, fz] of [
+    [-0.9, 1.4],
+    [0.9, 1.4],
+    [-0.92, -1.38],
+    [0.92, -1.38],
+  ] as const) {
+    add(fenderGeo, paint, [fx, -0.42, fz], [1, 1, 1], [0, Math.PI / 2, 0]);
+  }
 
-  // --- Twin headrest fairings on the rear deck (iconic 550) ---
-  add(unit, paint, [-0.3, 0.3, -0.85], [0.26, 0.22, 0.55]);
-  add(unit, paint, [0.3, 0.3, -0.85], [0.26, 0.22, 0.55]);
+  // --- Twin headrest fairings (slim streamlined humps, not balls) ---
+  const fairingGeo = new CapsuleGeometry(0.14, 0.42, 4, 10);
+  add(fairingGeo, paint, [-0.3, 0.28, -0.9], [1, 1, 1], [Math.PI / 2, 0, 0]);
+  add(fairingGeo, paint, [0.3, 0.28, -0.9], [1, 1, 1], [Math.PI / 2, 0, 0]);
 
   // --- Open cockpit: dark tub + low seats ---
   add(new BoxGeometry(1.0, 0.1, 1.15), interiorMat, [0, 0.16, -0.15]);
@@ -163,8 +172,8 @@ export function createVehicleBodyGroup(colorHex: string | number = 0xb10f1a): Ob
   const driverMan = createDriverFigure("man");
   const driverWoman = createDriverFigure("woman");
   for (const d of [driverMan, driverWoman]) {
-    d.position.set(0.42, 0.06, -0.32);
-    d.scale.setScalar(0.9);
+    d.position.set(0.42, 0.12, -0.32);
+    d.scale.setScalar(1.0);
     group.add(d);
   }
   driverWoman.visible = false;

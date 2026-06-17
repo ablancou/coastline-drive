@@ -28,7 +28,7 @@ export function GameCanvas() {
         powerPreference: "high-performance",
         alpha: false,
         toneMapping: ACESFilmicToneMapping,
-        toneMappingExposure: 1.05,
+        toneMappingExposure: 1.15,
       }}
       camera={{
         fov: 55,
