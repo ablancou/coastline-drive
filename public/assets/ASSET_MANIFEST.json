@@ -11,6 +11,7 @@
     { "id": "hdri-dalkey-view", "file": "third-party/hdri/dalkey_view_2k.hdr", "source": "https://polyhaven.com/a/dalkey_view", "license": "CC0", "author": "Poly Haven", "addedAt": "2026-06-16", "usage": "Destination 'Costa Azul · mirador'." },
     { "id": "hdri-cloudy-cliffside-road", "file": "third-party/hdri/cloudy_cliffside_road_2k.hdr", "source": "https://polyhaven.com/a/cloudy_cliffside_road", "license": "CC0", "author": "Poly Haven", "addedAt": "2026-06-16", "usage": "Destination 'Positano · acantilado'." },
     { "id": "hdri-spiaggia-di-mondello", "file": "third-party/hdri/spiaggia_di_mondello_2k.hdr", "source": "https://polyhaven.com/a/spiaggia_di_mondello", "license": "CC0", "author": "Poly Haven", "addedAt": "2026-06-16", "usage": "Destination 'Amalfi · Italia'." },
-    { "id": "hdri-blouberg-sunrise-1", "file": "third-party/hdri/blouberg_sunrise_1_2k.hdr", "source": "https://polyhaven.com/a/blouberg_sunrise_1", "license": "CC0", "author": "Poly Haven", "addedAt": "2026-06-16", "usage": "Destination 'Portofino · amanecer'." }
+    { "id": "hdri-blouberg-sunrise-1", "file": "third-party/hdri/blouberg_sunrise_1_2k.hdr", "source": "https://polyhaven.com/a/blouberg_sunrise_1", "license": "CC0", "author": "Poly Haven", "addedAt": "2026-06-16", "usage": "Destination 'Portofino · amanecer'." },
+    { "id": "tex-earth-2048", "file": "third-party/textures/earth_2048.jpg", "source": "https://github.com/mrdoob/three.js (examples/textures/planets)", "license": "Public Domain", "author": "NASA Visible Earth (Blue Marble)", "addedAt": "2026-06-17", "usage": "World map texture for the Garage destination globe." }
   ]
 }

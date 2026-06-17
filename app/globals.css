@@ -584,8 +584,8 @@ body {
 
 /* ---- Garage configurator panel ---- */
 .garage__panel {
-  width: min(92vw, 40rem);
-  max-height: 80vh;
+  width: min(94vw, 56rem);
+  max-height: 84vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -685,14 +685,66 @@ body {
   width: 100%;
 }
 
-.globe-wrap {
+.dest-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
   width: 100%;
-  height: 300px;
+  align-items: center;
+  justify-content: center;
+}
+
+.globe-wrap {
+  width: 360px;
+  height: 360px;
+  max-width: 100%;
+  flex: 0 0 auto;
   cursor: grab;
 }
 
 .globe-wrap:active {
   cursor: grabbing;
+}
+
+.dest-list {
+  flex: 1 1 14rem;
+  min-width: 13rem;
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  text-align: left;
+  padding-right: 0.3rem;
+}
+
+.dest-list__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.dest-item {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.78rem;
+  text-align: left;
+  color: #c8d4e0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(200, 212, 224, 0.14);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.dest-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dest-item--active {
+  border-color: #9fc4ff;
+  background: rgba(90, 155, 255, 0.2);
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .globe-label {
