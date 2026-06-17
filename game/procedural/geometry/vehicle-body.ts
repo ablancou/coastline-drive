@@ -135,24 +135,27 @@ export function createVehicleBodyGroup(colorHex: string | number = 0xb10f1a): Ob
   add(fairingGeo, paint, [-0.3, 0.28, -0.9], [1, 1, 1], [Math.PI / 2, 0, 0]);
   add(fairingGeo, paint, [0.3, 0.28, -0.9], [1, 1, 1], [Math.PI / 2, 0, 0]);
 
-  // --- Open cockpit: dark tub + low seats ---
-  add(new BoxGeometry(1.0, 0.1, 1.15), interiorMat, [0, 0.16, -0.15]);
-  for (const sx of [-0.34, 0.34]) {
-    add(unit, leather, [sx, 0.22, -0.28], [0.24, 0.1, 0.26]);
-    add(unit, leather, [sx, 0.32, -0.5], [0.24, 0.16, 0.12]);
+  // --- Open cockpit: recessed footwell (top BELOW the body line) + low seats ---
+  add(new BoxGeometry(0.92, 0.18, 1.22), interiorMat, [0, -0.02, -0.15]); // top ≈ 0.07
+  for (const sx of [-0.32, 0.32]) {
+    add(new BoxGeometry(0.34, 0.05, 0.36), leather, [sx, 0.07, -0.3]); // cushion (flush)
+    add(new BoxGeometry(0.34, 0.22, 0.07), leather, [sx, 0.17, -0.52]); // low backrest
   }
 
   // --- Low wraparound windscreen ---
-  add(new BoxGeometry(1.0, 0.03, 0.05), chrome, [0, 0.4, 0.42], [1, 1, 1], [-0.5, 0, 0]);
-  add(new BoxGeometry(0.94, 0.12, 0.02), glass, [0, 0.45, 0.41], [1, 1, 1], [-0.5, 0, 0]);
+  add(new BoxGeometry(1.0, 0.03, 0.05), chrome, [0, 0.36, 0.42], [1, 1, 1], [-0.5, 0, 0]);
+  add(new BoxGeometry(0.94, 0.12, 0.02), glass, [0, 0.41, 0.41], [1, 1, 1], [-0.5, 0, 0]);
 
   // --- Steering wheel (left-hand drive: +X) ---
-  add(new CylinderGeometry(0.02, 0.02, 0.2, 8), chrome, [0.42, 0.28, 0.2], [1, 1, 1], [Math.PI / 2 - 0.5, 0, 0]);
-  add(unit, interiorMat, [0.42, 0.32, 0.1], [0.15, 0.15, 0.03]);
+  add(new CylinderGeometry(0.02, 0.02, 0.18, 8), chrome, [0.42, 0.18, 0.12], [1, 1, 1], [Math.PI / 2 - 0.5, 0, 0]);
+  add(unit, interiorMat, [0.42, 0.22, 0.04], [0.14, 0.14, 0.025]);
 
-  // --- Round lamps + intake + over-riders ---
+  // --- Round lamps (with chrome bezels) + intake + over-riders ---
+  const bezel = new TorusGeometry(0.15, 0.02, 8, 18);
   add(unit, headlight, [-0.6, 0.1, 1.92], [0.12, 0.13, 0.1]);
   add(unit, headlight, [0.6, 0.1, 1.92], [0.12, 0.13, 0.1]);
+  add(bezel, chrome, [-0.6, 0.1, 1.98]);
+  add(bezel, chrome, [0.6, 0.1, 1.98]);
   add(new BoxGeometry(0.5, 0.12, 0.06), interiorMat, [0, -0.04, 2.12]);
   add(unit, chrome, [-0.4, -0.04, 2.14], [0.06, 0.09, 0.06]);
   add(unit, chrome, [0.4, -0.04, 2.14], [0.06, 0.09, 0.06]);
@@ -171,9 +174,10 @@ export function createVehicleBodyGroup(colorHex: string | number = 0xb10f1a): Ob
   // --- Driver figures (left-hand drive: +X), raised so they read clearly ---
   const driverMan = createDriverFigure("man");
   const driverWoman = createDriverFigure("woman");
+  // Seated low in the cockpit — only chest, shoulders, arms and head show.
   for (const d of [driverMan, driverWoman]) {
-    d.position.set(0.42, 0.12, -0.32);
-    d.scale.setScalar(1.0);
+    d.position.set(0.42, -0.08, -0.34);
+    d.scale.setScalar(0.78);
     group.add(d);
   }
   driverWoman.visible = false;

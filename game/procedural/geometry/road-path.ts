@@ -153,7 +153,8 @@ export function getRoadInteriorSign(): number {
   curve.getTangent(0, _tangent).normalize();
   _side.crossVectors(_up, _tangent).normalize();
   const lateralOfCentroid = (cx - _point.x) * _side.x + (cz - _point.z) * _side.z;
-  _interiorSign = lateralOfCentroid >= 0 ? 1 : -1;
+  // Negated so the sea (exterior) sits on the driver's right while cruising.
+  _interiorSign = lateralOfCentroid >= 0 ? -1 : 1;
   return _interiorSign;
 }
 
