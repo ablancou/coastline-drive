@@ -1,5 +1,6 @@
 "use client";
 
+import { BestLapBanner } from "@/components/ui/best-lap-banner";
 import { LapTimer } from "@/components/ui/lap-timer";
 import { finiteOr } from "@/lib/math";
 import { useTelemetryStore } from "@/stores/telemetry-store";
@@ -16,6 +17,7 @@ export function Hud() {
       </header>
 
       <LapTimer />
+      <BestLapBanner />
 
       <div className="hud__speed">
         <span className="hud__speed-value">{formatInt(snapshot.speedKmh, 0)}</span>

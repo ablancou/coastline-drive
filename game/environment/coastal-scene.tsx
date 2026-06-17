@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { MeshStandardMaterial } from "three";
 import { CliffRocks } from "@/game/environment/cliff-rocks";
+import { CoastalProps } from "@/game/environment/coastal-props";
 import { Guardrails } from "@/game/environment/guardrails";
 import { Palms } from "@/game/environment/palms";
 import { createOceanMaterial } from "@/game/procedural/materials/ocean";
@@ -50,6 +51,7 @@ export function CoastalScene() {
       <Guardrails />
       <CliffRocks />
       <Palms />
+      <CoastalProps />
       <mesh
         rotation-x={-Math.PI / 2}
         position={[0, -1.5, 0]}
