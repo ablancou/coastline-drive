@@ -2,23 +2,31 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { Garage } from "@/components/game/garage";
+import { Landing } from "@/components/game/landing";
 import { SkySwitcher } from "@/components/game/sky-switcher";
-import { StartScreen } from "@/components/game/start-screen";
 import { Hud } from "@/components/ui/hud";
-import { pauseEngineAudio } from "@/game/procedural/audio/engine-audio";
+import { pauseEngineAudio, startEngineAudio } from "@/game/procedural/audio/engine-audio";
 
 const GameCanvas = dynamic(
   () => import("@/components/game/game-canvas").then((m) => m.GameCanvas),
   { ssr: false },
 );
 
-/** Client shell — Canvas requires browser WebGL; HUD overlays via Zustand. */
+type Phase = "landing" | "garage" | "playing";
+
+/** Client shell — landing → garage (configure) → playing. */
 export function GameShell() {
-  const [started, setStarted] = useState(false);
+  const [phase, setPhase] = useState<Phase>("landing");
+
+  const handleStart = () => {
+    startEngineAudio();
+    setPhase("playing");
+  };
 
   const handleExit = () => {
     pauseEngineAudio();
-    setStarted(false);
+    setPhase("garage");
   };
 
   return (
@@ -28,12 +36,15 @@ export function GameShell() {
       </div>
       <Hud />
       <SkySwitcher />
-      {started ? (
-        <button className="exit-btn" onClick={handleExit} aria-label="Exit to menu">
+
+      {phase === "landing" && <Landing onEnter={() => setPhase("garage")} />}
+      {phase === "garage" && (
+        <Garage onStart={handleStart} onBack={() => setPhase("landing")} />
+      )}
+      {phase === "playing" && (
+        <button className="exit-btn" onClick={handleExit} aria-label="Exit to garage">
           ✕ EXIT
         </button>
-      ) : (
-        <StartScreen onStart={() => setStarted(true)} />
       )}
     </main>
   );

@@ -510,3 +510,171 @@ body {
     margin-top: 0.8rem;
   }
 }
+/* ---- Landing + Garage overlays (share the title-screen backdrop) ---- */
+.landing,
+.garage {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  background: radial-gradient(
+    120% 120% at 50% 25%,
+    rgba(20, 32, 48, 0.35) 0%,
+    rgba(6, 10, 16, 0.82) 60%,
+    rgba(4, 7, 11, 0.95) 100%
+  );
+  backdrop-filter: blur(6px);
+  animation: start-fade 0.6s ease both;
+}
+
+/* Animated white/blue signature on the landing page */
+.signature {
+  position: absolute;
+  bottom: 3.4rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: clamp(0.9rem, 2.6vw, 1.3rem);
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  background: linear-gradient(90deg, #ffffff, #5b9bff, #ffffff, #5b9bff);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: signature-shimmer 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes signature-shimmer {
+  to {
+    background-position: 300% 0;
+  }
+}
+
+/* Attribution footer */
+.site-footer {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 31;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: rgba(200, 212, 224, 0.6);
+}
+
+.site-footer a {
+  color: #9fc4ff;
+  text-decoration: none;
+  pointer-events: auto;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.site-footer a:hover {
+  color: #cfe0ff;
+  border-bottom-color: #9fc4ff;
+}
+
+/* ---- Garage configurator panel ---- */
+.garage__panel {
+  width: min(92vw, 40rem);
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.4rem 1.6rem 1.8rem;
+  background: rgba(10, 15, 22, 0.72);
+  border: 1px solid rgba(200, 212, 224, 0.14);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.garage__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.garage__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  color: #c8d4e0;
+}
+
+.garage__back {
+  background: none;
+  border: none;
+  color: #9fc4ff;
+  cursor: pointer;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+}
+
+.garage__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+}
+
+.garage__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.dest-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.dest-region {
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  color: #6a8aa8;
+}
+
+.dest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.dest-card {
+  padding: 0.6rem 0.7rem;
+  font-size: 0.72rem;
+  text-align: left;
+  color: #c8d4e0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(200, 212, 224, 0.16);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.dest-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dest-card--active {
+  border-color: #9fc4ff;
+  background: rgba(90, 155, 255, 0.18);
+  color: #ffffff;
+}
+
+.garage__drive {
+  align-self: center;
+  margin-top: 0.3rem;
+}
