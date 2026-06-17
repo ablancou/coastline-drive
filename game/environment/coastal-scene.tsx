@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { MeshStandardMaterial } from "three";
 import { CliffRocks } from "@/game/environment/cliff-rocks";
 import { Guardrails } from "@/game/environment/guardrails";
+import { Palms } from "@/game/environment/palms";
 import { createOceanMaterial } from "@/game/procedural/materials/ocean";
 import { createRoadGeometry } from "@/game/procedural/geometry/road";
 import { createTerrainGeometry } from "@/game/procedural/geometry/terrain";
@@ -48,6 +49,7 @@ export function CoastalScene() {
       <mesh geometry={terrainGeometry} material={terrainMaterial} receiveShadow castShadow />
       <Guardrails />
       <CliffRocks />
+      <Palms />
       <mesh
         rotation-x={-Math.PI / 2}
         position={[0, -1.5, 0]}
