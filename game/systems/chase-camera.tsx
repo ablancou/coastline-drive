@@ -2,8 +2,8 @@
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
-import { Vector3 } from "three";
-import { CHASE_CAMERA } from "@/game/constants/camera";
+import { PerspectiveCamera, Vector3 } from "three";
+import { CAMERA_BASE_FOV, CHASE_CAMERA } from "@/game/constants/camera";
 import { computeChaseCameraPose } from "@/game/systems/chase-camera-math";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 
@@ -60,6 +60,13 @@ export function ChaseCamera() {
     }
 
     camera.lookAt(lookPoint.current);
+
+    // Speed sense — widen FOV slightly as speed rises.
+    if (camera instanceof PerspectiveCamera) {
+      const targetFov = CAMERA_BASE_FOV + Math.min(speed * 0.42, 14);
+      camera.fov += (targetFov - camera.fov) * (1 - Math.exp(-4 * delta));
+      camera.updateProjectionMatrix();
+    }
   });
 
   return null;

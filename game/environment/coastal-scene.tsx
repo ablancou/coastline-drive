@@ -5,8 +5,8 @@ import { MeshStandardMaterial } from "three";
 import { CliffRocks } from "@/game/environment/cliff-rocks";
 import { CoastalProps } from "@/game/environment/coastal-props";
 import { Guardrails } from "@/game/environment/guardrails";
+import { Ocean } from "@/game/environment/ocean";
 import { Palms } from "@/game/environment/palms";
-import { createOceanMaterial } from "@/game/procedural/materials/ocean";
 import { createRoadGeometry } from "@/game/procedural/geometry/road";
 import { createTerrainGeometry } from "@/game/procedural/geometry/terrain";
 import { createAsphaltTexture } from "@/game/procedural/textures/asphalt";
@@ -20,7 +20,6 @@ export function CoastalScene() {
     tex.repeat.set(4, 20);
     return tex;
   }, []);
-  const oceanMaterial = useMemo(() => createOceanMaterial(), []);
 
   const roadMaterial = useMemo(
     () =>
@@ -52,14 +51,7 @@ export function CoastalScene() {
       <CliffRocks />
       <Palms />
       <CoastalProps />
-      <mesh
-        rotation-x={-Math.PI / 2}
-        position={[0, -1.5, 0]}
-        material={oceanMaterial}
-        receiveShadow
-      >
-        <planeGeometry args={[1200, 1200, 1, 1]} />
-      </mesh>
+      <Ocean />
     </group>
   );
 }

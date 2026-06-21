@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import { ACESFilmicToneMapping, Quaternion, Vector3 } from "three";
 import { GameScene } from "@/components/game/game-scene";
+import { CAMERA_BASE_FOV } from "@/game/constants/camera";
 import { getVehicleSpawnPose } from "@/game/constants/spawn";
 import { computeChaseCameraPose } from "@/game/systems/chase-camera-math";
 
@@ -31,7 +32,7 @@ export function GameCanvas() {
         toneMappingExposure: 1.15,
       }}
       camera={{
-        fov: 55,
+        fov: CAMERA_BASE_FOV,
         near: 0.5,
         far: 1500,
         position: initialCamera.position.toArray(),

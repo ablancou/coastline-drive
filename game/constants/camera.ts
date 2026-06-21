@@ -1,3 +1,6 @@
+/** Base (resting) field of view; widens with speed for a sense of velocity. */
+export const CAMERA_BASE_FOV = 55;
+
 /** Third-person chase camera tuning. */
 export const CHASE_CAMERA = {
   /** Distance behind the vehicle along its forward axis. */
