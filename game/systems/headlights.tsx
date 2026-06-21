@@ -12,7 +12,9 @@ const _right = new Vector3();
 
 /** Two forward-facing spotlights mounted on the car. Toggle with "L". */
 export function Headlights() {
-  const on = useSceneStore((s) => s.headlightsOn);
+  const headlightsOn = useSceneStore((s) => s.headlightsOn);
+  const night = useSceneStore((s) => s.night);
+  const on = headlightsOn || night;
   const lRef = useRef<SpotLight>(null);
   const rRef = useRef<SpotLight>(null);
   const lTarget = useMemo(() => new Object3D(), []);
@@ -50,7 +52,7 @@ export function Headlights() {
         p.z + _fwd.z * 18 + _right.z * 2 * side,
       );
       target.updateMatrixWorld();
-      light.intensity = 7;
+      light.intensity = night ? 11 : 6;
     }
   });
 

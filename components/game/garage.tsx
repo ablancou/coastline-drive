@@ -30,6 +30,8 @@ export function Garage({ onStart, onBack }: GarageProps) {
     useCustomizationStore();
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const setSky = useSceneStore((s) => s.setSky);
+  const night = useSceneStore((s) => s.night);
+  const setNight = useSceneStore((s) => s.setNight);
   const bestByTrack = useLapStore((s) => s.bestByTrack);
 
   return (
@@ -94,6 +96,26 @@ export function Garage({ onStart, onBack }: GarageProps) {
                 onClick={() => setDriver("woman")}
               >
                 Mujer
+              </button>
+            </div>
+          </section>
+
+          <section className="garage__section">
+            <span className="custom__label">HORA</span>
+            <div className="custom__toggle">
+              <button
+                type="button"
+                className={`pill${!night ? " pill--active" : ""}`}
+                onClick={() => setNight(false)}
+              >
+                Día
+              </button>
+              <button
+                type="button"
+                className={`pill${night ? " pill--active" : ""}`}
+                onClick={() => setNight(true)}
+              >
+                Noche
               </button>
             </div>
           </section>

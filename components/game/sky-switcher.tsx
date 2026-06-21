@@ -12,6 +12,7 @@ export function SkySwitcher() {
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const nextSky = useSceneStore((s) => s.nextSky);
   const toggleHeadlights = useSceneStore((s) => s.toggleHeadlights);
+  const toggleNight = useSceneStore((s) => s.toggleNight);
   const [visible, setVisible] = useState(false);
   const firstRender = useRef(true);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -20,10 +21,11 @@ export function SkySwitcher() {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "KeyN") nextSky(SKY_PRESETS.length);
       if (e.code === "KeyL") toggleHeadlights();
+      if (e.code === "KeyT") toggleNight();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [nextSky, toggleHeadlights]);
+  }, [nextSky, toggleHeadlights, toggleNight]);
 
   // Flash the label whenever the sky changes (skip the initial mount).
   useEffect(() => {
