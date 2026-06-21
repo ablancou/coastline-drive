@@ -2,10 +2,12 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
+import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { SPAWN_T } from "@/game/constants/spawn";
 import { getRoadProgress } from "@/game/procedural/geometry/road-path";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 import { useLapStore } from "@/stores/lap-store";
+import { useSceneStore } from "@/stores/scene-store";
 
 /**
  * Lap timing: tracks the car's normalized progress along the circuit and counts
@@ -36,7 +38,9 @@ export function LapSystem() {
 
     // Forward crossing of the finish line: progress wraps from ~1 back to ~0.
     if (armed.current && prevAround.current > 0.9 && around < 0.1) {
-      useLapStore.getState().completeLap(performance.now());
+      const idx = useSceneStore.getState().skyIndex;
+      const trackId = SKY_PRESETS[idx % SKY_PRESETS.length]?.id ?? "unknown";
+      useLapStore.getState().completeLap(performance.now(), trackId);
       armed.current = false;
     }
 

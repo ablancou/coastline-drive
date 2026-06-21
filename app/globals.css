@@ -899,3 +899,35 @@ body {
   letter-spacing: 0.05em;
   color: #8aa0b8;
 }
+
+/* ---- Destination record time in the list ---- */
+.dest-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.dest-item__rec {
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  color: #7cffb2;
+  opacity: 0.9;
+}
+
+/* ---- Landing controls hint ---- */
+.landing__keys {
+  position: absolute;
+  bottom: 5.6rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: clamp(0.58rem, 1.6vw, 0.72rem);
+  letter-spacing: 0.05em;
+  color: rgba(106, 138, 168, 0.8);
+  pointer-events: none;
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .landing__keys { bottom: 4.4rem; }
+}

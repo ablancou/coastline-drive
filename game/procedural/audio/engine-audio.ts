@@ -196,6 +196,7 @@ export function updateEngineAudio(
   throttle: number,
   handbrake: boolean,
   steerAbs: number,
+  slipAbs = 0,
 ): void {
   if (!graph || !running) return;
   const g = graph;
@@ -222,7 +223,8 @@ export function updateEngineAudio(
   const speedNorm = Math.min(1, safeSpeed / 220);
   g.windGain.gain.setTargetAtTime(speedNorm * 0.18, t, 0.1);
 
-  const screech = (handbrake ? 0.5 : 0) + steer * speedNorm * 0.5;
+  const slip = Number.isFinite(slipAbs) ? Math.min(1, Math.abs(slipAbs) * 2.6) : 0;
+  const screech = (handbrake ? 0.45 : 0) + steer * speedNorm * 0.35 + slip * speedNorm * 0.8;
   const tireBase = speedNorm * 0.06;
   g.tireGain.gain.setTargetAtTime(tireBase + screech * speedNorm * 0.3, t, 0.06);
 }

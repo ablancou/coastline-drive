@@ -7,6 +7,7 @@ import {
   toggleEngineAudioMuted,
   updateEngineAudio,
 } from "@/game/procedural/audio/engine-audio";
+import { vehicleTarget } from "@/game/systems/vehicle-target";
 import { useTelemetryStore } from "@/stores/telemetry-store";
 
 /**
@@ -26,7 +27,14 @@ export function EngineAudioSystem() {
   useFrame(() => {
     if (!isEngineAudioRunning()) return;
     const s = useTelemetryStore.getState().snapshot;
-    updateEngineAudio(s.rpm, s.speedKmh, s.throttle, s.handbrake, Math.abs(s.steer));
+    updateEngineAudio(
+      s.rpm,
+      s.speedKmh,
+      s.throttle,
+      s.handbrake,
+      Math.abs(s.steer),
+      Math.abs(vehicleTarget.slip),
+    );
   });
 
   return null;

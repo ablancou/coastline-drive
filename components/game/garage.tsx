@@ -6,7 +6,16 @@ import { CAR_DESIGNS } from "@/game/constants/cars";
 import { CAR_COLORS } from "@/game/constants/customization";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { useCustomizationStore } from "@/stores/customization-store";
+import { useLapStore } from "@/stores/lap-store";
 import { useSceneStore } from "@/stores/scene-store";
+
+function formatLap(ms: number | undefined): string {
+  if (ms == null || !Number.isFinite(ms)) return "—";
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  const mmm = Math.floor(ms % 1000);
+  return `${m}:${String(s).padStart(2, "0")}.${String(mmm).padStart(3, "0")}`;
+}
 
 interface GarageProps {
   onStart: () => void;
@@ -21,6 +30,7 @@ export function Garage({ onStart, onBack }: GarageProps) {
     useCustomizationStore();
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const setSky = useSceneStore((s) => s.setSky);
+  const bestByTrack = useLapStore((s) => s.bestByTrack);
 
   return (
     <div className="garage">
@@ -104,7 +114,10 @@ export function Garage({ onStart, onBack }: GarageProps) {
                           className={`dest-item${skyIndex === i ? " dest-item--active" : ""}`}
                           onClick={() => setSky(i)}
                         >
-                          {preset.label}
+                          <span>{preset.label}</span>
+                          <span className="dest-item__rec">
+                            {formatLap(bestByTrack[preset.id])}
+                          </span>
                         </button>
                       ) : null,
                     )}

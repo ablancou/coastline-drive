@@ -22,6 +22,10 @@ export function Landing({ onEnter }: LandingProps) {
         </button>
       </div>
 
+      <div className="landing__keys">
+        W/S acelerar · A/D girar · Espacio derrape · N playa · L faros · M audio
+      </div>
+
       <div className="signature" aria-hidden="true">
         Created by Armando Blanco
       </div>
