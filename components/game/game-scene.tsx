@@ -6,6 +6,7 @@ import { SkySetup } from "@/game/environment/sky-setup";
 import { PhysicsWorld } from "@/game/physics/physics-world";
 import { CameraBootstrap } from "@/game/systems/camera-bootstrap";
 import { ChaseCamera } from "@/game/systems/chase-camera";
+import { DriftEffects } from "@/game/systems/drift-effects";
 import { EngineAudioSystem } from "@/game/systems/engine-audio-system";
 import { LapSystem } from "@/game/systems/lap-system";
 import { VehicleController } from "@/game/vehicles/vehicle-controller";
@@ -23,6 +24,7 @@ export function GameScene() {
       </PhysicsWorld>
       <EngineAudioSystem />
       <LapSystem />
+      <DriftEffects />
       <PostFx />
     </>
   );

@@ -8,6 +8,8 @@ export interface VehicleTargetState {
   active: boolean;
   /** Transient camera-shake intensity (set on impact, decayed by the camera). */
   shake: number;
+  /** Slip angle (radians) between heading and travel — drives drift effects. */
+  slip: number;
 }
 
 export const vehicleTarget: VehicleTargetState = {
@@ -16,6 +18,7 @@ export const vehicleTarget: VehicleTargetState = {
   velocity: new Vector3(),
   active: false,
   shake: 0,
+  slip: 0,
 };
 
 export function updateVehicleTarget(
