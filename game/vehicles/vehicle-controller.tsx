@@ -12,7 +12,7 @@ import { TELEMETRY_FLUSH_INTERVAL } from "@/game/constants/input";
 import { PHYSICS_TIMESTEP } from "@/game/constants/physics";
 import { getChassisRestHeightAboveRoad, getVehicleSpawnPose } from "@/game/constants/spawn";
 import { VEHICLE_CONFIG } from "@/game/constants/vehicle";
-import { createVehicleBodyGroup } from "@/game/procedural/geometry/vehicle-body";
+import { createCarBody } from "@/game/procedural/geometry/car-designs";
 import { createWheelMesh } from "@/game/procedural/geometry/wheel";
 import {
   getRoadSurfaceAt,
@@ -82,7 +82,13 @@ export function VehicleController() {
   const inputSystem = useMemo(() => createInputSystem(), []);
   const spawnPose = useMemo(() => getVehicleSpawnPose(), []);
   const restHeight = useMemo(() => getChassisRestHeightAboveRoad(), []);
-  const bodyGroup = useMemo(() => createVehicleBodyGroup(), []);
+
+  const carId = useCustomizationStore((s) => s.carId);
+  const carColor = useCustomizationStore((s) => s.carColor);
+  const driver = useCustomizationStore((s) => s.driver);
+
+  // Rebuild the body when the selected car changes (rare — Garage only).
+  const bodyGroup = useMemo(() => createCarBody(carId), [carId]);
   const wheelObjects = useMemo(
     () => VEHICLE_CONFIG.wheels.map((w) => createWheelMesh(w.radius)),
     [],
@@ -93,9 +99,6 @@ export function VehicleController() {
     simRef.current.heading = spawnPose.rotationY;
     simRef.current.velAngle = spawnPose.rotationY;
   }, [spawnPose]);
-
-  const carColor = useCustomizationStore((s) => s.carColor);
-  const driver = useCustomizationStore((s) => s.driver);
 
   useEffect(() => {
     inputSystem.bind();

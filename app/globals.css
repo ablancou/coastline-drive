@@ -856,3 +856,46 @@ body {
     right: 1rem;
   }
 }
+
+/* ---- Car selector (Garage) ---- */
+.car-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.car-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(200, 212, 224, 0.16);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.car-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.car-card--active {
+  border-color: #9fc4ff;
+  background: rgba(90, 155, 255, 0.18);
+}
+
+.car-card__name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+
+.car-card__tag {
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  color: #8aa0b8;
+}

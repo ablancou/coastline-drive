@@ -2,6 +2,7 @@
 
 import { DestinationGlobe } from "@/components/game/destination-globe";
 import { SiteFooter } from "@/components/game/site-footer";
+import { CAR_DESIGNS } from "@/game/constants/cars";
 import { CAR_COLORS } from "@/game/constants/customization";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { useCustomizationStore } from "@/stores/customization-store";
@@ -16,7 +17,8 @@ const REGIONS = ["México", "Europa"] as const;
 
 /** Configurator page — car color, driver, and destination (track). */
 export function Garage({ onStart, onBack }: GarageProps) {
-  const { carColor, driver, setCarColor, setDriver } = useCustomizationStore();
+  const { carId, carColor, driver, setCarId, setCarColor, setDriver } =
+    useCustomizationStore();
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const setSky = useSceneStore((s) => s.setSky);
 
@@ -32,6 +34,23 @@ export function Garage({ onStart, onBack }: GarageProps) {
         </header>
 
         <div className="garage__body">
+          <section className="garage__section">
+            <span className="custom__label">AUTO</span>
+            <div className="car-grid">
+              {CAR_DESIGNS.map((car) => (
+                <button
+                  key={car.id}
+                  type="button"
+                  className={`car-card${carId === car.id ? " car-card--active" : ""}`}
+                  onClick={() => setCarId(car.id)}
+                >
+                  <span className="car-card__name">{car.name}</span>
+                  <span className="car-card__tag">{car.tagline}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
           <section className="garage__section">
             <span className="custom__label">COLOR DEL AUTO</span>
             <div className="custom__swatches">
