@@ -1144,3 +1144,46 @@ body {
   font-size: 1rem;
   letter-spacing: 0.05em;
 }
+
+/* ---- Mobile / touch HUD adjustments ---- */
+@media (hover: none) and (pointer: coarse) {
+  /* Bottom corners belong to the touch controls. */
+  .hud__controls {
+    display: none;
+  }
+  .hud__telemetry {
+    display: none;
+  }
+  .hud__speed {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: 1.6rem;
+  }
+  .hud__speed-value {
+    font-size: 2.6rem;
+  }
+  .minimap {
+    top: 1rem;
+    right: 1rem;
+    bottom: auto;
+    width: 108px;
+    height: 108px;
+  }
+}
+
+@media (max-width: 479px) {
+  .hud {
+    padding: 1rem;
+  }
+  .lap {
+    top: 3.4rem;
+    left: 1rem;
+  }
+  .lap__time {
+    font-size: 1.4rem;
+  }
+  .hud__speed-value {
+    font-size: 2.3rem;
+  }
+}
