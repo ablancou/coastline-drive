@@ -7,6 +7,7 @@ import { SPAWN_T } from "@/game/constants/spawn";
 import { getRoadProgress } from "@/game/procedural/geometry/road-path";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 import { useLapStore } from "@/stores/lap-store";
+import { useRaceStore } from "@/stores/race-store";
 import { useSceneStore } from "@/stores/scene-store";
 
 /**
@@ -21,6 +22,8 @@ export function LapSystem() {
 
   useFrame(() => {
     if (!vehicleTarget.active) return;
+    const race = useRaceStore.getState();
+    if (race.paused || race.finished) return;
 
     const pos = vehicleTarget.position;
     const t = getRoadProgress(pos.x, pos.z);
@@ -42,6 +45,12 @@ export function LapSystem() {
       const trackId = SKY_PRESETS[idx % SKY_PRESETS.length]?.id ?? "unknown";
       useLapStore.getState().completeLap(performance.now(), trackId);
       armed.current = false;
+
+      // Race finish: target laps reached.
+      const target = race.targetLaps;
+      if (target > 0 && useLapStore.getState().lapCount >= target) {
+        useRaceStore.getState().setFinished(true);
+      }
     }
 
     prevAround.current = around;

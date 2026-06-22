@@ -27,6 +27,8 @@ interface LapStore {
   lastLapMs: number | null;
   bestLapMs: number | null;
   lapCount: number;
+  /** Sum of completed lap times this run. */
+  raceTotalMs: number;
   /** Persistent best lap per destination id. */
   bestByTrack: Record<string, number>;
   startTiming: (perf: number) => void;
@@ -40,6 +42,7 @@ export const useLapStore = create<LapStore>((set) => ({
   lastLapMs: null,
   bestLapMs: null,
   lapCount: 0,
+  raceTotalMs: 0,
   bestByTrack: loadBest(),
   startTiming: (perf) => set({ lapStartPerf: perf, timing: true }),
   completeLap: (perf, trackId) =>
@@ -55,9 +58,17 @@ export const useLapStore = create<LapStore>((set) => ({
         lastLapMs: ms,
         bestLapMs: state.bestLapMs == null ? ms : Math.min(state.bestLapMs, ms),
         lapCount: state.lapCount + 1,
+        raceTotalMs: state.raceTotalMs + ms,
         bestByTrack,
       };
     }),
   reset: () =>
-    set({ lapStartPerf: 0, timing: false, lastLapMs: null, bestLapMs: null, lapCount: 0 }),
+    set({
+      lapStartPerf: 0,
+      timing: false,
+      lastLapMs: null,
+      bestLapMs: null,
+      lapCount: 0,
+      raceTotalMs: 0,
+    }),
 }));

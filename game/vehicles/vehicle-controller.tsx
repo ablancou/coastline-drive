@@ -24,6 +24,7 @@ import { createInputSystem } from "@/game/systems/input-system";
 import { updateVehicleTarget, vehicleTarget } from "@/game/systems/vehicle-target";
 import { clamp, finiteOr, wrapAngle } from "@/lib/math";
 import { useCustomizationStore } from "@/stores/customization-store";
+import { useRaceStore } from "@/stores/race-store";
 import { useTelemetryStore } from "@/stores/telemetry-store";
 import type { MeshPhysicalMaterial } from "three";
 import type { InputState } from "@/types/input";
@@ -122,6 +123,13 @@ export function VehicleController() {
   useBeforePhysicsStep(() => {
     const chassis = chassisRef.current;
     if (!chassis) return;
+
+    // Freeze the car while paused or after the race finishes.
+    const race = useRaceStore.getState();
+    if (race.paused || race.finished) {
+      simRef.current.speedMs = 0;
+      return;
+    }
 
     inputRef.current = inputSystem.poll();
     stepVehicle(chassis, simRef.current, inputRef.current, restHeight, spawnPose.rotationY);

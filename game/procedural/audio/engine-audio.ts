@@ -207,9 +207,17 @@ export function updateEngineAudio(
   const thr = Number.isFinite(throttle) ? Math.min(1, Math.max(0, throttle)) : 0;
   const steer = Number.isFinite(steerAbs) ? Math.min(1, Math.abs(steerAbs)) : 0;
 
-  // Engine pitch from firing frequency, smoothed.
-  const targetFreq = (safeRpm / 60) * FIRING_FACTOR;
-  curFreq += (targetFreq - curFreq) * 0.25;
+  // Gearbox feel: rev rises within a gear, then drops on the up-shift.
+  const GEARS = [14, 30, 46, 64, 86, 999]; // upper speed (km/h) of each gear
+  let gear = 0;
+  while (gear < GEARS.length - 1 && safeSpeed > GEARS[gear]!) gear++;
+  const gearLo = gear === 0 ? 0 : GEARS[gear - 1]!;
+  const gearHi = GEARS[gear]!;
+  const rev = Math.min(1, Math.max(0, (safeSpeed - gearLo) / (gearHi - gearLo)));
+  // Idle floor + per-gear rev sweep + a little from throttle (load growl).
+  const baseHz = 44 + rev * 150 + thr * 22;
+  const targetFreq = Number.isFinite(baseHz) ? baseHz : 45;
+  curFreq += (targetFreq - curFreq) * 0.22;
   g.oscA.frequency.setTargetAtTime(curFreq, t, 0.03);
   g.oscB.frequency.setTargetAtTime(curFreq * 2, t, 0.03);
   g.sub.frequency.setTargetAtTime(curFreq * 0.5, t, 0.05);

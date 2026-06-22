@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useLapStore } from "@/stores/lap-store";
+import { useRaceStore } from "@/stores/race-store";
 
 /** HUD lap timer — live current lap, last lap, best lap. DOM only. */
 export function LapTimer() {
   const { lapStartPerf, timing, lastLapMs, bestLapMs, lapCount } = useLapStore();
+  const targetLaps = useRaceStore((s) => s.targetLaps);
   const [now, setNow] = useState(0);
 
   // Self-tick for the live timer (display only — not on the physics hot path).
@@ -25,7 +27,10 @@ export function LapTimer() {
   return (
     <div className="lap">
       <div className="lap__current">
-        <span className="lap__eyebrow">LAP {lapCount + 1}</span>
+        <span className="lap__eyebrow">
+          LAP {lapCount + 1}
+          {targetLaps > 0 ? ` / ${targetLaps}` : ""}
+        </span>
         <span className="lap__time">{formatLap(currentMs)}</span>
       </div>
       <div className="lap__rows">
