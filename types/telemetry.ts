@@ -7,7 +7,7 @@ export interface TelemetrySnapshot {
   brake: number;
   steer: number;
   handbrake: boolean;
-  inputSource: "gamepad" | "keyboard" | "none";
+  inputSource: "gamepad" | "keyboard" | "touch" | "none";
 }
 
 export const INITIAL_TELEMETRY: TelemetrySnapshot = {

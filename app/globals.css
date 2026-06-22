@@ -1072,3 +1072,75 @@ body {
   font-size: 0.8rem;
   color: #8aa0b8;
 }
+
+/* ---- Touch controls (mobile only) ---- */
+.touch {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .touch {
+    display: block;
+  }
+}
+
+.touch__steer,
+.touch__drive {
+  position: absolute;
+  bottom: 1.4rem;
+  z-index: 22;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.8rem;
+}
+
+.touch__steer {
+  left: 1.2rem;
+}
+
+.touch__drive {
+  right: 1.2rem;
+}
+
+.touch-btn {
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #e8eef4;
+  background: rgba(10, 15, 20, 0.42);
+  border: 1px solid rgba(200, 212, 224, 0.3);
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-btn:active {
+  background: rgba(159, 196, 255, 0.35);
+  transform: scale(0.95);
+}
+
+.touch-btn--throttle {
+  width: 5.4rem;
+  height: 5.4rem;
+  border-color: rgba(124, 255, 178, 0.55);
+  color: #7cffb2;
+}
+
+.touch-btn--brake {
+  border-color: rgba(232, 93, 74, 0.55);
+  color: #e85d4a;
+}
+
+.touch-btn--handbrake {
+  width: 3.4rem;
+  height: 3.4rem;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}

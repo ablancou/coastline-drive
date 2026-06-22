@@ -7,6 +7,7 @@ import { Garage } from "@/components/game/garage";
 import { Landing } from "@/components/game/landing";
 import { Minimap } from "@/components/game/minimap";
 import { SkySwitcher } from "@/components/game/sky-switcher";
+import { TouchControls } from "@/components/game/touch-controls";
 import { Hud } from "@/components/ui/hud";
 import { pauseEngineAudio, startEngineAudio } from "@/game/procedural/audio/engine-audio";
 import { useLapStore } from "@/stores/lap-store";
@@ -106,6 +107,7 @@ export function GameShell() {
               ❚❚ PAUSA
             </button>
           )}
+          {!paused && !finished && !hudHidden && <TouchControls />}
 
           {paused && !finished && (
             <div className="overlay">

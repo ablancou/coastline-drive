@@ -27,6 +27,7 @@ function sanitizeTelemetry(
     inputSource:
       merged.inputSource === "gamepad" ||
       merged.inputSource === "keyboard" ||
+      merged.inputSource === "touch" ||
       merged.inputSource === "none"
         ? merged.inputSource
         : "none",

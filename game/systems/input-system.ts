@@ -1,4 +1,5 @@
 import { GAMEPAD_DEADZONE } from "@/game/constants/input";
+import { touchInput } from "@/game/systems/touch-input";
 import { applyDeadzone, clamp } from "@/lib/math";
 import { ZERO_INPUT, type InputState } from "@/types/input";
 
@@ -10,7 +11,7 @@ const KEY_MAP = {
   handbrake: new Set(["Space"]),
 } as const;
 
-type InputSource = "gamepad" | "keyboard" | "none";
+type InputSource = "gamepad" | "keyboard" | "touch" | "none";
 
 interface InputSystemState {
   keys: Set<string>;
@@ -104,6 +105,16 @@ export function createInputSystem(): {
       if (gamepadInput) {
         state.source = "gamepad";
         return gamepadInput;
+      }
+
+      if (touchInput.active) {
+        state.source = "touch";
+        return {
+          throttle: clamp(touchInput.throttle, 0, 1),
+          brake: clamp(touchInput.brake, 0, 1),
+          steer: clamp(touchInput.steer, -1, 1),
+          handbrake: touchInput.handbrake,
+        };
       }
 
       const keyboardInput = pollKeyboard();
