@@ -11,6 +11,7 @@ import { Hud } from "@/components/ui/hud";
 import { pauseEngineAudio, startEngineAudio } from "@/game/procedural/audio/engine-audio";
 import { useLapStore } from "@/stores/lap-store";
 import { useRaceStore } from "@/stores/race-store";
+import { useSceneStore } from "@/stores/scene-store";
 
 const GameCanvas = dynamic(
   () => import("@/components/game/game-canvas").then((m) => m.GameCanvas),
@@ -35,6 +36,9 @@ export function GameShell() {
   const paused = useRaceStore((s) => s.paused);
   const finished = useRaceStore((s) => s.finished);
   const started = useRaceStore((s) => s.started);
+  const position = useRaceStore((s) => s.position);
+  const totalRacers = useRaceStore((s) => s.totalRacers);
+  const hudHidden = useSceneStore((s) => s.hudHidden);
   const lastLapMs = useLapStore((s) => s.lastLapMs);
   const bestLapMs = useLapStore((s) => s.bestLapMs);
   const raceTotalMs = useLapStore((s) => s.raceTotalMs);
@@ -85,7 +89,7 @@ export function GameShell() {
       <div className="app__canvas">
         <GameCanvas />
       </div>
-      <Hud />
+      {!hudHidden && <Hud />}
       <SkySwitcher />
 
       {phase === "landing" && <Landing onEnter={() => setPhase("garage")} />}
@@ -95,9 +99,9 @@ export function GameShell() {
 
       {phase === "playing" && (
         <>
-          <Minimap />
+          {!hudHidden && <Minimap />}
           {!started && !finished && <Countdown />}
-          {started && !paused && !finished && (
+          {started && !paused && !finished && !hudHidden && (
             <button className="exit-btn" onClick={togglePause} aria-label="Pause">
               ❚❚ PAUSA
             </button>
@@ -122,6 +126,14 @@ export function GameShell() {
               <div className="overlay__panel">
                 <h2 className="overlay__title overlay__title--win">¡CARRERA TERMINADA!</h2>
                 <div className="overlay__stats">
+                  {totalRacers > 1 && (
+                    <div className="overlay__stat">
+                      <span>POSICIÓN</span>
+                      <b className="overlay__best">
+                        P{position} / {totalRacers}
+                      </b>
+                    </div>
+                  )}
                   <div className="overlay__stat">
                     <span>VUELTAS</span>
                     <b>{lapCount}</b>
