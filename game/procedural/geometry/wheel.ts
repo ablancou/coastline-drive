@@ -12,7 +12,7 @@ import {
  * Procedural performance wheel — rubber tire + machined alloy rim with spokes,
  * a hub cap and a brake disc with caliper. Rolls about its local X axis.
  */
-export function createWheelMesh(radius: number): Object3D {
+export function createWheelMesh(radius: number, rimColor: string | number = 0xc9ced6): Object3D {
   const wheel = new Group();
   const width = 0.3;
 
@@ -22,7 +22,7 @@ export function createWheelMesh(radius: number): Object3D {
     roughness: 0.85,
   });
   const rimMat = new MeshStandardMaterial({
-    color: 0xc9ced6,
+    color: rimColor,
     metalness: 1,
     roughness: 0.22,
     envMapIntensity: 1.4,

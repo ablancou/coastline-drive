@@ -93,6 +93,17 @@ function build(): EngineAudioGraph {
   windSrc.connect(windLp).connect(windGain).connect(master);
   windSrc.start();
 
+  // Ambient ocean wash: filtered noise with a slow LFO swelling the gain.
+  const waveSrc = new AudioBufferSourceNode(ctx, { buffer: noise, loop: true });
+  const waveLp = new BiquadFilterNode(ctx, { type: "lowpass", frequency: 360, Q: 0.6 });
+  const waveGain = new GainNode(ctx, { gain: 0.05 });
+  waveSrc.connect(waveLp).connect(waveGain).connect(master);
+  waveSrc.start();
+  const lfo = new OscillatorNode(ctx, { type: "sine", frequency: 0.12 });
+  const lfoGain = new GainNode(ctx, { gain: 0.035 });
+  lfo.connect(lfoGain).connect(waveGain.gain);
+  lfo.start();
+
   return {
     ctx,
     master,

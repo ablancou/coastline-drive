@@ -23,7 +23,7 @@ export function LapSystem() {
   useFrame(() => {
     if (!vehicleTarget.active) return;
     const race = useRaceStore.getState();
-    if (race.paused || race.finished) return;
+    if (!race.started || race.paused || race.finished) return;
 
     const pos = vehicleTarget.position;
     const t = getRoadProgress(pos.x, pos.z);
@@ -31,8 +31,8 @@ export function LapSystem() {
     const around = (t - SPAWN_T + 1) % 1;
 
     if (prevAround.current === null) {
+      // Timing is started by the countdown's GO; just seed progress here.
       prevAround.current = around;
-      useLapStore.getState().startTiming(performance.now());
       return;
     }
 

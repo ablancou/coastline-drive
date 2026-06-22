@@ -10,7 +10,7 @@ import { DriftEffects } from "@/game/systems/drift-effects";
 import { EngineAudioSystem } from "@/game/systems/engine-audio-system";
 import { Headlights } from "@/game/systems/headlights";
 import { LapSystem } from "@/game/systems/lap-system";
-import { Traffic } from "@/game/systems/traffic";
+import { Rivals } from "@/game/systems/rivals";
 import { VehicleController } from "@/game/vehicles/vehicle-controller";
 
 /** Full 3D scene — rendering, physics, and simulation live exclusively here. */
@@ -21,7 +21,7 @@ export function GameScene() {
       <CameraBootstrap />
       <ChaseCamera />
       <CoastalScene />
-      <Traffic />
+      <Rivals />
       <PhysicsWorld>
         <VehicleController />
       </PhysicsWorld>

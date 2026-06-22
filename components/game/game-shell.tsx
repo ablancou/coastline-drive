@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Countdown } from "@/components/game/countdown";
 import { Garage } from "@/components/game/garage";
 import { Landing } from "@/components/game/landing";
 import { Minimap } from "@/components/game/minimap";
@@ -33,6 +34,7 @@ export function GameShell() {
 
   const paused = useRaceStore((s) => s.paused);
   const finished = useRaceStore((s) => s.finished);
+  const started = useRaceStore((s) => s.started);
   const lastLapMs = useLapStore((s) => s.lastLapMs);
   const bestLapMs = useLapStore((s) => s.bestLapMs);
   const raceTotalMs = useLapStore((s) => s.raceTotalMs);
@@ -53,7 +55,7 @@ export function GameShell() {
 
   const togglePause = useCallback(() => {
     const race = useRaceStore.getState();
-    if (race.finished) return;
+    if (race.finished || !race.started) return;
     if (!race.paused) {
       pausedAt.current = performance.now();
       pauseEngineAudio();
@@ -94,7 +96,8 @@ export function GameShell() {
       {phase === "playing" && (
         <>
           <Minimap />
-          {!paused && !finished && (
+          {!started && !finished && <Countdown />}
+          {started && !paused && !finished && (
             <button className="exit-btn" onClick={togglePause} aria-label="Pause">
               ❚❚ PAUSA
             </button>

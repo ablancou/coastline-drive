@@ -3,7 +3,7 @@
 import { DestinationGlobe } from "@/components/game/destination-globe";
 import { SiteFooter } from "@/components/game/site-footer";
 import { CAR_DESIGNS } from "@/game/constants/cars";
-import { CAR_COLORS } from "@/game/constants/customization";
+import { CAR_COLORS, WHEEL_COLORS } from "@/game/constants/customization";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { useCustomizationStore } from "@/stores/customization-store";
 import { useLapStore } from "@/stores/lap-store";
@@ -34,7 +34,7 @@ const REGIONS = ["México", "Europa"] as const;
 
 /** Configurator page — car color, driver, and destination (track). */
 export function Garage({ onStart, onBack }: GarageProps) {
-  const { carId, carColor, driver, setCarId, setCarColor, setDriver } =
+  const { carId, carColor, wheelColor, driver, setCarId, setCarColor, setWheelColor, setDriver } =
     useCustomizationStore();
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const setSky = useSceneStore((s) => s.setSky);
@@ -83,6 +83,23 @@ export function Garage({ onStart, onBack }: GarageProps) {
                   className={`swatch${carColor === c.hex ? " swatch--active" : ""}`}
                   style={{ background: c.hex }}
                   onClick={() => setCarColor(c.hex)}
+                  aria-label={c.label}
+                  title={c.label}
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="garage__section">
+            <span className="custom__label">LLANTAS</span>
+            <div className="custom__swatches">
+              {WHEEL_COLORS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`swatch${wheelColor === c.hex ? " swatch--active" : ""}`}
+                  style={{ background: c.hex }}
+                  onClick={() => setWheelColor(c.hex)}
                   aria-label={c.label}
                   title={c.label}
                 />

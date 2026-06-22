@@ -86,13 +86,14 @@ export function VehicleController() {
 
   const carId = useCustomizationStore((s) => s.carId);
   const carColor = useCustomizationStore((s) => s.carColor);
+  const wheelColor = useCustomizationStore((s) => s.wheelColor);
   const driver = useCustomizationStore((s) => s.driver);
 
   // Rebuild the body when the selected car changes (rare — Garage only).
   const bodyGroup = useMemo(() => createCarBody(carId), [carId]);
   const wheelObjects = useMemo(
-    () => VEHICLE_CONFIG.wheels.map((w) => createWheelMesh(w.radius)),
-    [],
+    () => VEHICLE_CONFIG.wheels.map((w) => createWheelMesh(w.radius, wheelColor)),
+    [wheelColor],
   );
 
   // Seed the integrator heading + travel direction from the spawn yaw (once).
@@ -124,9 +125,9 @@ export function VehicleController() {
     const chassis = chassisRef.current;
     if (!chassis) return;
 
-    // Freeze the car while paused or after the race finishes.
+    // Freeze the car before the countdown ends, while paused, or once finished.
     const race = useRaceStore.getState();
-    if (race.paused || race.finished) {
+    if (!race.started || race.paused || race.finished) {
       simRef.current.speedMs = 0;
       return;
     }

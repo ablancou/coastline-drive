@@ -2,6 +2,7 @@
 
 import { BestLapBanner } from "@/components/ui/best-lap-banner";
 import { LapTimer } from "@/components/ui/lap-timer";
+import { PositionBadge } from "@/components/ui/position-badge";
 import { finiteOr } from "@/lib/math";
 import { useTelemetryStore } from "@/stores/telemetry-store";
 
@@ -17,6 +18,7 @@ export function Hud() {
       </header>
 
       <LapTimer />
+      <PositionBadge />
       <BestLapBanner />
 
       <div className="hud__speed">
