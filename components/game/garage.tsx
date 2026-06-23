@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { DestinationGlobe } from "@/components/game/destination-globe";
 import { SiteFooter } from "@/components/game/site-footer";
 import { CAR_DESIGNS } from "@/game/constants/cars";
@@ -46,6 +47,7 @@ export function Garage({ onStart, onBack }: GarageProps) {
   const setTargetLaps = useRaceStore((s) => s.setTargetLaps);
   const timeTrial = useRaceStore((s) => s.timeTrial);
   const setTimeTrial = useRaceStore((s) => s.setTimeTrial);
+  const [showRecords, setShowRecords] = useState(false);
 
   return (
     <div className="garage">
@@ -55,7 +57,9 @@ export function Garage({ onStart, onBack }: GarageProps) {
             ← VOLVER
           </button>
           <h2 className="garage__title">GARAGE</h2>
-          <span />
+          <button className="garage__back" onClick={() => setShowRecords(true)}>
+            🏆 RÉCORDS
+          </button>
         </header>
 
         <div className="garage__body">
@@ -228,6 +232,37 @@ export function Garage({ onStart, onBack }: GarageProps) {
       </div>
 
       <SiteFooter />
+
+      {showRecords && (
+        <div
+          className="legal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Récords"
+          onClick={() => setShowRecords(false)}
+        >
+          <div className="legal__panel" onClick={(e) => e.stopPropagation()}>
+            <header className="legal__head">
+              <h2 className="legal__title">🏆 RÉCORDS · Mejor vuelta</h2>
+              <button className="legal__close" onClick={() => setShowRecords(false)} aria-label="Cerrar">
+                ✕
+              </button>
+            </header>
+            <div className="legal__body">
+              <div className="records">
+                {SKY_PRESETS.map((p) => (
+                  <div key={p.id} className="records__row">
+                    <span>{p.label}</span>
+                    <span className={`records__time${bestByTrack[p.id] != null ? " records__time--set" : ""}`}>
+                      {formatLap(bestByTrack[p.id])}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1417,3 +1417,29 @@ body {
     width: 8rem;
   }
 }
+
+/* ---- Records table ---- */
+.records {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.records__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.82rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(200, 212, 224, 0.08);
+  color: #c8d4e0;
+}
+
+.records__time {
+  font-variant-numeric: tabular-nums;
+  color: #6a8aa8;
+}
+
+.records__time--set {
+  color: #7cffb2;
+}

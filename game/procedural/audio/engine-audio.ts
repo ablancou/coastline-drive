@@ -15,6 +15,8 @@ interface EngineAudioGraph {
   lowpass: BiquadFilterNode;
   tireGain: GainNode;
   windGain: GainNode;
+  musicGain: GainNode;
+  musicOscs: OscillatorNode[];
   noise: AudioBuffer;
 }
 
@@ -25,6 +27,17 @@ const FIRING_FACTOR = 3;
 let graph: EngineAudioGraph | null = null;
 let running = false;
 let muted = false;
+let musicMuted = false;
+let chordIdx = -1;
+let nextChordAt = 0;
+
+// Slow chord pad progression (low triads, Hz).
+const CHORDS: number[][] = [
+  [110.0, 164.81, 220.0], // Am
+  [87.31, 130.81, 174.61], // F
+  [130.81, 196.0, 261.63], // C
+  [98.0, 146.83, 196.0], // G
+];
 
 // Smoothed targets (updated each frame, ramped on the audio thread).
 let curFreq = 40;
@@ -104,6 +117,17 @@ function build(): EngineAudioGraph {
   lfo.connect(lfoGain).connect(waveGain.gain);
   lfo.start();
 
+  // --- Generative music: a soft 3-voice chord pad through a warm lowpass.
+  const musicLp = new BiquadFilterNode(ctx, { type: "lowpass", frequency: 700, Q: 0.5 });
+  const musicGain = new GainNode(ctx, { gain: musicMuted ? 0 : 0.06 });
+  musicLp.connect(musicGain).connect(master);
+  const musicOscs = [0, 1, 2].map((i) => {
+    const o = new OscillatorNode(ctx, { type: "triangle", frequency: 110 + i * 50 });
+    o.connect(musicLp);
+    o.start();
+    return o;
+  });
+
   return {
     ctx,
     master,
@@ -114,6 +138,8 @@ function build(): EngineAudioGraph {
     lowpass,
     tireGain,
     windGain,
+    musicGain,
+    musicOscs,
     noise,
   };
 }
@@ -195,6 +221,25 @@ export function setEngineAudioMuted(value: boolean): void {
 export function toggleEngineAudioMuted(): boolean {
   setEngineAudioMuted(!muted);
   return muted;
+}
+
+export function toggleMusic(): boolean {
+  musicMuted = !musicMuted;
+  if (graph) graph.musicGain.gain.setTargetAtTime(musicMuted ? 0 : 0.06, graph.ctx.currentTime, 0.4);
+  return musicMuted;
+}
+
+/** Advance the chord pad over time. Called each frame. */
+export function updateMusic(): void {
+  if (!graph || !running) return;
+  const t = graph.ctx.currentTime;
+  if (t < nextChordAt) return;
+  nextChordAt = t + 5.5;
+  chordIdx = (chordIdx + 1) % CHORDS.length;
+  const chord = CHORDS[chordIdx]!;
+  graph.musicOscs.forEach((o, i) => {
+    o.frequency.setTargetAtTime(chord[i] ?? 110, t, 0.6);
+  });
 }
 
 /**

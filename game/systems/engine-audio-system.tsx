@@ -6,6 +6,7 @@ import {
   isEngineAudioRunning,
   toggleEngineAudioMuted,
   updateEngineAudio,
+  updateMusic,
 } from "@/game/procedural/audio/engine-audio";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 import { useTelemetryStore } from "@/stores/telemetry-store";
@@ -26,6 +27,7 @@ export function EngineAudioSystem() {
 
   useFrame(() => {
     if (!isEngineAudioRunning()) return;
+    updateMusic();
     const s = useTelemetryStore.getState().snapshot;
     updateEngineAudio(
       s.rpm,

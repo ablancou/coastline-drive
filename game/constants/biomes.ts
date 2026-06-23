@@ -9,6 +9,8 @@ export interface Biome {
   sand: [number, number, number];
   /** Palm tree count. */
   palms: number;
+  /** Has a coastal city/marina (adds buildings). */
+  urban?: boolean;
 }
 
 const TROPICAL: Biome = {
@@ -37,16 +39,16 @@ const MEDITERRANEAN: Biome = {
 
 /** Destination id → biome. */
 const BIOME_BY_DEST: Record<string, Biome> = {
-  acapulco: TROPICAL,
-  cancun: TROPICAL,
+  acapulco: { ...TROPICAL, urban: true },
+  cancun: { ...TROPICAL, urban: true },
   los_cabos: ARID,
   tulum: TROPICAL,
-  niza: MEDITERRANEAN,
-  monaco: MEDITERRANEAN,
+  niza: { ...MEDITERRANEAN, urban: true },
+  monaco: { ...MEDITERRANEAN, urban: true },
   costa_azul: MEDITERRANEAN,
   positano: MEDITERRANEAN,
   amalfi: TROPICAL,
-  portofino: MEDITERRANEAN,
+  portofino: { ...MEDITERRANEAN, urban: true },
 };
 
 export function getBiome(destId: string): Biome {

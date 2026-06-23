@@ -4,11 +4,12 @@ import { useMemo } from "react";
 import { MeshStandardMaterial } from "three";
 import { getBiome } from "@/game/constants/biomes";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
+import { Buildings } from "@/game/environment/buildings";
 import { CliffRocks } from "@/game/environment/cliff-rocks";
 import { CoastalProps } from "@/game/environment/coastal-props";
+import { Foliage } from "@/game/environment/foliage";
 import { Guardrails } from "@/game/environment/guardrails";
 import { Ocean } from "@/game/environment/ocean";
-import { Palms } from "@/game/environment/palms";
 import { createRoadGeometry } from "@/game/procedural/geometry/road";
 import { createTerrainGeometry } from "@/game/procedural/geometry/terrain";
 import { createAsphaltTexture } from "@/game/procedural/textures/asphalt";
@@ -58,7 +59,8 @@ export function CoastalScene() {
       <mesh geometry={terrainGeometry} material={terrainMaterial} receiveShadow castShadow />
       <Guardrails />
       <CliffRocks />
-      <Palms count={biome.palms} />
+      <Foliage biome={biome} />
+      {biome.urban && <Buildings />}
       <CoastalProps />
       <Ocean />
     </group>

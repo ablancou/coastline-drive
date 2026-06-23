@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toggleMusic } from "@/game/procedural/audio/engine-audio";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { timeOfDay } from "@/game/systems/time-of-day";
 import { useSceneStore } from "@/stores/scene-store";
@@ -23,6 +24,7 @@ export function SkySwitcher() {
       if (e.code === "KeyN") nextSky(SKY_PRESETS.length);
       if (e.code === "KeyL") toggleHeadlights();
       if (e.code === "KeyT") timeOfDay.value = (timeOfDay.value + 0.12) % 1;
+      if (e.code === "KeyB") toggleMusic();
       if (e.code === "KeyH") toggleHud();
     };
     window.addEventListener("keydown", onKey);

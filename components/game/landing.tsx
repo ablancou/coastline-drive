@@ -23,7 +23,7 @@ export function Landing({ onEnter }: LandingProps) {
       </div>
 
       <div className="landing__keys">
-        W/S acelerar · A/D girar · Shift nitro · Espacio derrape · ESC pausa · N playa · T día/noche · L faros · H foto
+        W/S acelerar · A/D girar · Shift nitro · Espacio derrape · ESC pausa · N destino · T hora · L faros · B música · H foto
       </div>
 
       <div className="signature" aria-hidden="true">
