@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Countdown } from "@/components/game/countdown";
 import { Garage } from "@/components/game/garage";
 import { Landing } from "@/components/game/landing";
+import { Legal } from "@/components/game/legal";
 import { Minimap } from "@/components/game/minimap";
 import { SkySwitcher } from "@/components/game/sky-switcher";
 import { TouchControls } from "@/components/game/touch-controls";
@@ -92,6 +93,7 @@ export function GameShell() {
       </div>
       {!hudHidden && <Hud />}
       <SkySwitcher />
+      <Legal />
 
       {phase === "landing" && <Landing onEnter={() => setPhase("garage")} />}
       {phase === "garage" && (
