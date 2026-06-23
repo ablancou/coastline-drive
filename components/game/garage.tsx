@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/game/site-footer";
 import { CAR_DESIGNS } from "@/game/constants/cars";
 import { CAR_COLORS, WHEEL_COLORS } from "@/game/constants/customization";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
+import { timeOfDay } from "@/game/systems/time-of-day";
 import { useCustomizationStore } from "@/stores/customization-store";
 import { useLapStore } from "@/stores/lap-store";
 import { useRaceStore } from "@/stores/race-store";
@@ -149,14 +150,20 @@ export function Garage({ onStart, onBack }: GarageProps) {
               <button
                 type="button"
                 className={`pill${!night ? " pill--active" : ""}`}
-                onClick={() => setNight(false)}
+                onClick={() => {
+                  timeOfDay.value = 0.42;
+                  setNight(false);
+                }}
               >
                 Día
               </button>
               <button
                 type="button"
                 className={`pill${night ? " pill--active" : ""}`}
-                onClick={() => setNight(true)}
+                onClick={() => {
+                  timeOfDay.value = 0.86;
+                  setNight(true);
+                }}
               >
                 Noche
               </button>

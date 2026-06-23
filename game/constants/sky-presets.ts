@@ -25,7 +25,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   // --- México ---
   {
     id: "acapulco",
-    trackId: "stadium",
+    trackId: "acapulco",
     label: "Acapulco · atardecer",
     region: "México",
     file: `${HDRI_DIR}/secluded_beach_2k.hdr`,

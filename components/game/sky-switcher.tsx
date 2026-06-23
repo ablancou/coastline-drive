@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
+import { timeOfDay } from "@/game/systems/time-of-day";
 import { useSceneStore } from "@/stores/scene-store";
 
 /**
@@ -12,7 +13,6 @@ export function SkySwitcher() {
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const nextSky = useSceneStore((s) => s.nextSky);
   const toggleHeadlights = useSceneStore((s) => s.toggleHeadlights);
-  const toggleNight = useSceneStore((s) => s.toggleNight);
   const toggleHud = useSceneStore((s) => s.toggleHud);
   const [visible, setVisible] = useState(false);
   const firstRender = useRef(true);
@@ -22,12 +22,12 @@ export function SkySwitcher() {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "KeyN") nextSky(SKY_PRESETS.length);
       if (e.code === "KeyL") toggleHeadlights();
-      if (e.code === "KeyT") toggleNight();
+      if (e.code === "KeyT") timeOfDay.value = (timeOfDay.value + 0.12) % 1;
       if (e.code === "KeyH") toggleHud();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [nextSky, toggleHeadlights, toggleNight, toggleHud]);
+  }, [nextSky, toggleHeadlights, toggleHud]);
 
   // Flash the label whenever the sky changes (skip the initial mount).
   useEffect(() => {

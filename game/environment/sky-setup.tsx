@@ -1,17 +1,19 @@
 "use client";
 
 import { Environment } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
-import { useEffect } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
+import { type DirectionalLight, Fog, type HemisphereLight } from "three";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
+import { computeSky, makeSkyState, timeOfDay } from "@/game/systems/time-of-day";
 import { useSceneStore } from "@/stores/scene-store";
 
 const NIGHT_HDRI = "/assets/third-party/hdri/dikhololo_night_2k.hdr";
 
 /**
- * Coastal sky + IBL from CC0 HDRIs, with a real day/night toggle. Day uses the
- * destination's HDRI; night swaps to a shared starlit sky, dims the key light to
- * moonlight, cools the fog and lowers exposure — making the headlights matter.
+ * Real coastal sky with a continuous day/night cycle. The HDRI swaps between the
+ * destination's day sky and a shared night sky at dawn/dusk; the sun colour,
+ * intensity, position, exposure and fog all animate smoothly from the time of day.
  */
 export function SkySetup() {
   const skyIndex = useSceneStore((s) => s.skyIndex);
@@ -19,17 +21,39 @@ export function SkySetup() {
   const preset = SKY_PRESETS[skyIndex % SKY_PRESETS.length] ?? SKY_PRESETS[0]!;
   const { gl, scene } = useThree();
 
+  const sun = useRef<DirectionalLight>(null);
+  const hemi = useRef<HemisphereLight>(null);
+  const sky = useMemo(() => makeSkyState(), []);
+
   useEffect(() => {
     scene.backgroundRotation.set(0, preset.rotationY, 0);
     scene.environmentRotation.set(0, preset.rotationY, 0);
   }, [scene, preset]);
 
-  // Lower exposure at night for a moonlit mood.
   useEffect(() => {
-    gl.toneMappingExposure = night ? 0.62 : 1.15;
-  }, [gl, night]);
+    if (!scene.fog) scene.fog = new Fog("#cfe0ec", 340, 940);
+  }, [scene]);
 
-  const sunny = preset.sunny && !night;
+  useFrame(() => {
+    computeSky(timeOfDay.value, sky);
+    const s = sun.current;
+    if (s) {
+      s.intensity = sky.sunIntensity;
+      s.color.copy(sky.sunColor);
+      s.position.set(sky.sunX, sky.sunY, sky.sunZ);
+    }
+    if (hemi.current) {
+      hemi.current.intensity = sky.hemiIntensity;
+      hemi.current.color.copy(sky.hemiSky);
+    }
+    gl.toneMappingExposure = sky.exposure;
+    const fog = scene.fog as Fog | null;
+    if (fog) {
+      fog.color.copy(sky.fog);
+      fog.near = sky.night ? 220 : 340;
+      fog.far = sky.night ? 760 : 940;
+    }
+  });
 
   return (
     <>
@@ -44,15 +68,10 @@ export function SkySetup() {
         environmentIntensity={night ? 0.5 : preset.environmentIntensity}
       />
 
-      <hemisphereLight
-        args={night ? ["#34406a", "#0a0e18", 0.3] : ["#fff4e0", "#3b3026", sunny ? 0.4 : 0.25]}
-      />
+      <hemisphereLight ref={hemi} args={["#dcecff", "#2a2620", 0.32]} />
 
-      {/* Key light: warm sun by day, cool moonlight by night. */}
       <directionalLight
-        position={night ? [-60, 80, -40] : [120, 110, 80]}
-        intensity={night ? 0.5 : sunny ? 3.4 : 2.3}
-        color={night ? "#9fb8ff" : sunny ? "#fff0c4" : "#fff1d6"}
+        ref={sun}
         castShadow
         shadow-mapSize-width={4096}
         shadow-mapSize-height={4096}
@@ -62,11 +81,6 @@ export function SkySetup() {
         shadow-camera-top={260}
         shadow-camera-bottom={-260}
         shadow-bias={-0.0004}
-      />
-
-      <fog
-        attach="fog"
-        args={night ? ["#0a1224", 200, 720] : [sunny ? "#dcecff" : "#cfe0ec", 340, 940]}
       />
     </>
   );

@@ -49,6 +49,25 @@ export const TRACKS: Track[] = [
     ],
   },
   {
+    // Acapulco: a crescent bay with a long SE coastal straight (Zona Diamante /
+    // Bulevar de las Naciones) and a sweeping return past the bay (Caleta side).
+    id: "acapulco",
+    name: "Acapulco · Zona Diamante",
+    points: [
+      [-135, -30],
+      [-120, 45],
+      [-90, 100],
+      [-20, 122],
+      [60, 100],
+      [120, 52],
+      [142, -30],
+      [120, -120],
+      [60, -172],
+      [-30, -162],
+      [-100, -102],
+    ],
+  },
+  {
     id: "cliffs",
     name: "Acantilados",
     points: [
