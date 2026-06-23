@@ -8,6 +8,8 @@ export interface SkyPreset {
   id: string;
   label: string;
   region: "México" | "Europa";
+  /** Circuit layout used by this destination (see game/constants/tracks). */
+  trackId: string;
   file: string;
   environmentIntensity: number;
   backgroundIntensity: number;
@@ -23,6 +25,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   // --- México ---
   {
     id: "acapulco",
+    trackId: "stadium",
     label: "Acapulco · atardecer",
     region: "México",
     file: `${HDRI_DIR}/secluded_beach_2k.hdr`,
@@ -33,6 +36,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   },
   {
     id: "cancun",
+    trackId: "stadium",
     label: "Cancún · turquesa",
     region: "México",
     file: `${HDRI_DIR}/blue_lagoon_2k.hdr`,
@@ -43,6 +47,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   },
   {
     id: "los_cabos",
+    trackId: "bay",
     label: "Los Cabos · costa",
     region: "México",
     file: `${HDRI_DIR}/fish_hoek_beach_2k.hdr`,
@@ -53,6 +58,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   },
   {
     id: "tulum",
+    trackId: "bay",
     label: "Tulum · mañana",
     region: "México",
     file: `${HDRI_DIR}/umhlanga_sunrise_2k.hdr`,
@@ -64,6 +70,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   // --- Europa ---
   {
     id: "niza",
+    trackId: "stadium",
     label: "Niza · Riviera",
     region: "Europa",
     file: `${HDRI_DIR}/venice_sunset_2k.hdr`,
@@ -74,6 +81,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   },
   {
     id: "monaco",
+    trackId: "stadium",
     label: "Mónaco · marina",
     region: "Europa",
     file: `${HDRI_DIR}/petit_port_2k.hdr`,
@@ -84,6 +92,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   },
   {
     id: "costa_azul",
+    trackId: "cliffs",
     label: "Costa Azul · mirador",
     region: "Europa",
     file: `${HDRI_DIR}/dalkey_view_2k.hdr`,
@@ -94,6 +103,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   },
   {
     id: "positano",
+    trackId: "cliffs",
     label: "Positano · acantilado",
     region: "Europa",
     file: `${HDRI_DIR}/cloudy_cliffside_road_2k.hdr`,
@@ -104,6 +114,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   },
   {
     id: "amalfi",
+    trackId: "bay",
     label: "Amalfi · Italia",
     region: "Europa",
     file: `${HDRI_DIR}/spiaggia_di_mondello_2k.hdr`,
@@ -114,6 +125,7 @@ export const SKY_PRESETS: SkyPreset[] = [
   },
   {
     id: "portofino",
+    trackId: "bay",
     label: "Portofino · mañana",
     region: "Europa",
     file: `${HDRI_DIR}/blouberg_sunrise_1_2k.hdr`,

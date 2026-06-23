@@ -2,17 +2,23 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { Vector3 } from "three";
+import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { SPAWN_T } from "@/game/constants/spawn";
-import { getRoadCurve } from "@/game/procedural/geometry/road-path";
+import { getTrack } from "@/game/constants/tracks";
+import { getRoadCurve, setActiveTrack } from "@/game/procedural/geometry/road-path";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
+import { useSceneStore } from "@/stores/scene-store";
 
 const VB = 100;
 
 /** Top-down minimap of the circuit with a live marker for the car. */
 export function Minimap() {
   const dotRef = useRef<SVGCircleElement>(null);
+  const skyIndex = useSceneStore((s) => s.skyIndex);
+  const trackId = SKY_PRESETS[skyIndex % SKY_PRESETS.length]?.trackId ?? "stadium";
 
   const data = useMemo(() => {
+    setActiveTrack(getTrack(trackId));
     const curve = getRoadCurve();
     const p = new Vector3();
     const pts: [number, number][] = [];
@@ -43,7 +49,7 @@ export function Minimap() {
     curve.getPoint(SPAWN_T, p);
     const start = project(p.x, p.z);
     return { path, project, start };
-  }, []);
+  }, [trackId]);
 
   useEffect(() => {
     let raf = 0;

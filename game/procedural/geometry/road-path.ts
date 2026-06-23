@@ -1,50 +1,40 @@
 import { CatmullRomCurve3, Vector3 } from "three";
+import { DEFAULT_TRACK, type Track } from "@/game/constants/tracks";
 
 export const ROAD_WIDTH = 12;
 export const ROAD_SEGMENTS = 420;
+/** Road surface height (all track points sit at this y). */
+export const ROAD_SURFACE_Y = 0.02;
 /** Guardrails live on the exterior (ocean) edge of the loop. */
 export const ROAD_OCEAN_SIDE = -1;
 /** Cliffs rise on the interior of the loop. */
 export const ROAD_CLIFF_SIDE = 1;
-
-/**
- * Closed coastal circuit — a large stadium-style loop with two long straights
- * (east + west) and sweeping ends, so a lap takes much longer and mixes flat-out
- * straights with curves. Interior = central cliffs, exterior = ocean. The loop
- * can never end and the lateral clamp keeps the car off the sea.
- */
-const ROAD_POINTS: Vector3[] = [
-  // East long straight (south → north)
-  new Vector3(120, 0.02, -170),
-  new Vector3(120, 0.02, -60),
-  new Vector3(120, 0.02, 60),
-  new Vector3(120, 0.02, 160),
-  // North sweep (east → west)
-  new Vector3(80, 0.02, 205),
-  new Vector3(0, 0.02, 215),
-  new Vector3(-80, 0.02, 205),
-  // West long straight (north → south)
-  new Vector3(-120, 0.02, 160),
-  new Vector3(-120, 0.02, 60),
-  new Vector3(-120, 0.02, -60),
-  new Vector3(-120, 0.02, -170),
-  // South sweep (west → east) with a gentle kink for character
-  new Vector3(-80, 0.02, -210),
-  new Vector3(-10, 0.02, -218),
-  new Vector3(70, 0.02, -205),
-];
 
 const _point = new Vector3();
 const _tangent = new Vector3();
 const _side = new Vector3();
 const _up = new Vector3(0, 1, 0);
 
+let _activeTrack: Track = DEFAULT_TRACK;
 let _cachedCurve: CatmullRomCurve3 | null = null;
 let _interiorSign = 0;
 
+/** Switch the active circuit (resets the cached curve + interior sign). */
+export function setActiveTrack(track: Track): void {
+  if (track.id === _activeTrack.id) return;
+  _activeTrack = track;
+  _cachedCurve = null;
+  _interiorSign = 0;
+}
+
+export function getActiveTrack(): Track {
+  return _activeTrack;
+}
+
 export function getRoadCurve(): CatmullRomCurve3 {
   if (!_cachedCurve) {
-    _cachedCurve = new CatmullRomCurve3(ROAD_POINTS, true, "catmullrom", 0.5);
+    const pts = _activeTrack.points.map(([x, z]) => new Vector3(x, ROAD_SURFACE_Y, z));
+    _cachedCurve = new CatmullRomCurve3(pts, true, "catmullrom", 0.5);
   }
   return _cachedCurve;
 }
