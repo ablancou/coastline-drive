@@ -102,5 +102,62 @@ export function buildCoastalProps(): Group {
     root.add(parasol);
   }
 
+  // --- Wooden piers reaching into the water ---
+  const woodMat = new MeshStandardMaterial({ color: 0x7a5a36, roughness: 0.9 });
+  const deckGeo2 = new BoxGeometry(2, 0.16, 16);
+  const stiltGeo = new CylinderGeometry(0.1, 0.1, 1.9, 6);
+  for (let i = 0; i < 3; i++) {
+    sampleRoadFrame(hash01(i, 11.3) * 0.9 + 0.05, frame);
+    const dirX = frame.side.x * oceanSign;
+    const dirZ = frame.side.z * oceanSign;
+    const baseX = frame.point.x + dirX * (ROAD_WIDTH * 0.5 + 9);
+    const baseZ = frame.point.z + dirZ * (ROAD_WIDTH * 0.5 + 9);
+    const pier = new Group();
+    const deck = new Mesh(deckGeo2, woodMat);
+    deck.position.y = 0.05;
+    deck.castShadow = true;
+    pier.add(deck);
+    for (let s = -1; s <= 1; s++) {
+      for (const sx of [-0.8, 0.8]) {
+        const stilt = new Mesh(stiltGeo, woodMat);
+        stilt.position.set(sx, -0.9, s * 6.5);
+        pier.add(stilt);
+      }
+    }
+    pier.position.set(baseX, 0, baseZ);
+    pier.rotation.y = Math.atan2(dirX, dirZ);
+    root.add(pier);
+  }
+
+  // --- Palapa beach huts (thatched roof on poles) ---
+  const thatchMat = new MeshStandardMaterial({ color: 0xb89a5a, roughness: 0.95 });
+  const poleGeo2 = new CylinderGeometry(0.08, 0.08, 2.2, 6);
+  const roofGeo = new ConeGeometry(1.8, 1.3, 8);
+  for (let i = 0; i < 6; i++) {
+    sampleRoadFrame(hash01(i, 13.7), frame);
+    const lateral = oceanSign * (ROAD_WIDTH * 0.5 + 5 + hash01(i, 14.2) * 6);
+    const x = frame.point.x + frame.side.x * lateral;
+    const z = frame.point.z + frame.side.z * lateral;
+    const groundY = Math.max(cliffHeightAt(x, z), SEA_LEVEL + 0.2);
+    const palapa = new Group();
+    for (const [px, pz] of [
+      [-1, -1],
+      [1, -1],
+      [-1, 1],
+      [1, 1],
+    ] as const) {
+      const pole = new Mesh(poleGeo2, woodMat);
+      pole.position.set(px, 1.1, pz);
+      palapa.add(pole);
+    }
+    const roof = new Mesh(roofGeo, thatchMat);
+    roof.position.y = 2.7;
+    roof.castShadow = true;
+    palapa.add(roof);
+    palapa.position.set(x, groundY, z);
+    palapa.rotation.y = hash01(i, 15.5) * Math.PI;
+    root.add(palapa);
+  }
+
   return root;
 }

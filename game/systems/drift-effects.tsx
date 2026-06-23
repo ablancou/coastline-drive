@@ -12,8 +12,8 @@ import {
 } from "three";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 
-const SKID_COUNT = 220;
-const SMOKE_COUNT = 72;
+const SKID_COUNT = 160;
+const SMOKE_COUNT = 52;
 const ROAD_Y = 0.04;
 const FORWARD = new Vector3(0, 0, 1);
 

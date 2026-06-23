@@ -47,11 +47,24 @@ export function cliffHeightAt(x: number, z: number): number {
   return corridorFloor * (1 - blend) + natural * blend;
 }
 
-/** Coastal cliff terrain — road-aware height + vertex color strata. */
+export interface TerrainBiome {
+  grass: [number, number, number];
+  rock: [number, number, number];
+  sand: [number, number, number];
+}
+
+const DEFAULT_BIOME: TerrainBiome = {
+  grass: [0.22, 0.46, 0.2],
+  rock: [0.42, 0.4, 0.36],
+  sand: [0.62, 0.56, 0.42],
+};
+
+/** Coastal cliff terrain — road-aware height + biome-tinted vertex colors. */
 export function createTerrainGeometry(
   width = 340,
   depth = 560,
   segments = 150,
+  biome: TerrainBiome = DEFAULT_BIOME,
 ): BufferGeometry {
   const geometry = new PlaneGeometry(width, depth, segments, segments);
   geometry.rotateX(-Math.PI / 2);
@@ -68,27 +81,30 @@ export function createTerrainGeometry(
     positions.setY(i, height);
 
     const lateral = getLateralOffsetFromRoad(x, z);
-    const slope = Math.min(1, Math.max(0, (height + 0.5) / 10));
     const inland = Math.max(0, lateral - 4);
+    const G = biome.grass;
+    const R = biome.rock;
+    const S = biome.sand;
 
-    let r = 0.28;
-    let g = 0.42;
-    let b = 0.24;
+    let r = G[0];
+    let g = G[1];
+    let b = G[2];
 
     if (inland > 2) {
-      r = 0.36 + slope * 0.12;
-      g = 0.34 + slope * 0.05;
-      b = 0.28 + slope * 0.04;
+      const t = Math.min(1, (inland - 2) / 12); // grass → rock as it climbs
+      r = G[0] + (R[0] - G[0]) * t;
+      g = G[1] + (R[1] - G[1]) * t;
+      b = G[2] + (R[2] - G[2]) * t;
     }
     if (inland > 10) {
-      r = 0.42 + fractalNoise(x, z) * 0.06;
-      g = 0.4 + fractalNoise(z, x) * 0.05;
-      b = 0.36;
+      r = R[0] + fractalNoise(x, z) * 0.05;
+      g = R[1] + fractalNoise(z, x) * 0.04;
+      b = R[2];
     }
     if (lateral < -6) {
-      r = 0.62;
-      g = 0.56;
-      b = 0.42;
+      r = S[0];
+      g = S[1];
+      b = S[2];
     }
 
     colors[i * 3] = r;

@@ -73,8 +73,8 @@ export function SkySetup() {
       <directionalLight
         ref={sun}
         castShadow
-        shadow-mapSize-width={4096}
-        shadow-mapSize-height={4096}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
         shadow-camera-far={700}
         shadow-camera-left={-260}
         shadow-camera-right={260}

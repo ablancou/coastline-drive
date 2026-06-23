@@ -35,6 +35,7 @@ interface Rival {
 }
 
 export function Rivals() {
+  const timeTrial = useRaceStore((s) => s.timeTrial);
   const restHeight = useMemo(() => getChassisRestHeightAboveRoad(), []);
   const rivalsRef = useRef<Rival[]>([]);
   const frame = useMemo(
@@ -77,6 +78,10 @@ export function Rivals() {
 
   useFrame((_, dt) => {
     const race = useRaceStore.getState();
+    if (race.timeTrial) {
+      rivalPositions.length = 0; // no rivals → no collision
+      return;
+    }
     const live = race.started && !race.paused && !race.finished;
 
     rivalsRef.current.forEach((r, i) => {
@@ -109,5 +114,6 @@ export function Rivals() {
     }
   });
 
+  if (timeTrial) return null;
   return <primitive object={root} />;
 }

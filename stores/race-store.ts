@@ -11,6 +11,9 @@ interface RaceStore {
   /** Live standing. */
   position: number;
   totalRacers: number;
+  /** Time-trial: no rivals, focus on best lap. */
+  timeTrial: boolean;
+  setTimeTrial: (v: boolean) => void;
   setTargetLaps: (n: number) => void;
   setPaused: (v: boolean) => void;
   togglePaused: () => void;
@@ -28,6 +31,8 @@ export const useRaceStore = create<RaceStore>((set) => ({
   started: false,
   position: 1,
   totalRacers: 1,
+  timeTrial: false,
+  setTimeTrial: (v) => set({ timeTrial: v }),
   setTargetLaps: (n) => set({ targetLaps: Math.max(0, n) }),
   setPaused: (v) => set({ paused: v }),
   togglePaused: () => set((s) => ({ paused: !s.paused })),

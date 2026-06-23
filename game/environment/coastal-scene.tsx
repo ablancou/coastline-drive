@@ -2,6 +2,8 @@
 
 import { useMemo } from "react";
 import { MeshStandardMaterial } from "three";
+import { getBiome } from "@/game/constants/biomes";
+import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { CliffRocks } from "@/game/environment/cliff-rocks";
 import { CoastalProps } from "@/game/environment/coastal-props";
 import { Guardrails } from "@/game/environment/guardrails";
@@ -10,11 +12,18 @@ import { Palms } from "@/game/environment/palms";
 import { createRoadGeometry } from "@/game/procedural/geometry/road";
 import { createTerrainGeometry } from "@/game/procedural/geometry/terrain";
 import { createAsphaltTexture } from "@/game/procedural/textures/asphalt";
+import { useSceneStore } from "@/stores/scene-store";
 
 /** Assembles procedural coastal environment — zero external asset files. */
 export function CoastalScene() {
+  const skyIndex = useSceneStore((s) => s.skyIndex);
+  const biome = getBiome(SKY_PRESETS[skyIndex % SKY_PRESETS.length]?.id ?? "");
+
   const roadGeometry = useMemo(() => createRoadGeometry(), []);
-  const terrainGeometry = useMemo(() => createTerrainGeometry(), []);
+  const terrainGeometry = useMemo(
+    () => createTerrainGeometry(340, 560, 150, biome),
+    [biome],
+  );
   const asphaltTexture = useMemo(() => {
     const tex = createAsphaltTexture();
     tex.repeat.set(4, 20);
@@ -49,7 +58,7 @@ export function CoastalScene() {
       <mesh geometry={terrainGeometry} material={terrainMaterial} receiveShadow castShadow />
       <Guardrails />
       <CliffRocks />
-      <Palms />
+      <Palms count={biome.palms} />
       <CoastalProps />
       <Ocean />
     </group>

@@ -44,6 +44,8 @@ export function Garage({ onStart, onBack }: GarageProps) {
   const bestByTrack = useLapStore((s) => s.bestByTrack);
   const targetLaps = useRaceStore((s) => s.targetLaps);
   const setTargetLaps = useRaceStore((s) => s.setTargetLaps);
+  const timeTrial = useRaceStore((s) => s.timeTrial);
+  const setTimeTrial = useRaceStore((s) => s.setTimeTrial);
 
   return (
     <div className="garage">
@@ -124,6 +126,26 @@ export function Garage({ onStart, onBack }: GarageProps) {
                 onClick={() => setDriver("woman")}
               >
                 Mujer
+              </button>
+            </div>
+          </section>
+
+          <section className="garage__section">
+            <span className="custom__label">MODO</span>
+            <div className="custom__toggle">
+              <button
+                type="button"
+                className={`pill${!timeTrial ? " pill--active" : ""}`}
+                onClick={() => setTimeTrial(false)}
+              >
+                Carrera
+              </button>
+              <button
+                type="button"
+                className={`pill${timeTrial ? " pill--active" : ""}`}
+                onClick={() => setTimeTrial(true)}
+              >
+                Contrarreloj
               </button>
             </div>
           </section>
