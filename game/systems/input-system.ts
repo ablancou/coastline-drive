@@ -9,6 +9,7 @@ const KEY_MAP = {
   left: new Set(["KeyA", "ArrowLeft"]),
   right: new Set(["KeyD", "ArrowRight"]),
   handbrake: new Set(["Space"]),
+  boost: new Set(["ShiftLeft", "ShiftRight"]),
 } as const;
 
 type InputSource = "gamepad" | "keyboard" | "touch" | "none";
@@ -44,6 +45,7 @@ export function createInputSystem(): {
     let brake = 0;
     let steer = 0;
     let handbrake = false;
+    let boost = false;
 
     for (const code of KEY_MAP.forward) {
       if (state.keys.has(code)) throttle = 1;
@@ -60,12 +62,16 @@ export function createInputSystem(): {
     for (const code of KEY_MAP.handbrake) {
       if (state.keys.has(code)) handbrake = true;
     }
+    for (const code of KEY_MAP.boost) {
+      if (state.keys.has(code)) boost = true;
+    }
 
     return {
       throttle: clamp(throttle, 0, 1),
       brake: clamp(brake, 0, 1),
       steer: clamp(steer, -1, 1),
       handbrake,
+      boost,
     };
   };
 
@@ -81,12 +87,14 @@ export function createInputSystem(): {
     const brake = applyDeadzone(pad.buttons[7]?.value ?? 0, GAMEPAD_DEADZONE);
     const altBrake = applyDeadzone(-(pad.axes[2] ?? 0), GAMEPAD_DEADZONE);
     const handbrake = (pad.buttons[0]?.pressed ?? false) || (pad.buttons[1]?.value ?? 0) > 0.5;
+    const boost = (pad.buttons[5]?.pressed ?? false) || (pad.buttons[2]?.pressed ?? false);
 
     return {
       throttle: clamp(Math.max(throttle, 0), 0, 1),
       brake: clamp(Math.max(brake, altBrake, 0), 0, 1),
       steer: clamp(steer, -1, 1),
       handbrake,
+      boost,
     };
   };
 
@@ -114,6 +122,7 @@ export function createInputSystem(): {
           brake: clamp(touchInput.brake, 0, 1),
           steer: clamp(touchInput.steer, -1, 1),
           handbrake: touchInput.handbrake,
+          boost: touchInput.boost,
         };
       }
 
@@ -122,7 +131,8 @@ export function createInputSystem(): {
         keyboardInput.throttle > 0 ||
         keyboardInput.brake > 0 ||
         keyboardInput.steer !== 0 ||
-        keyboardInput.handbrake;
+        keyboardInput.handbrake ||
+        keyboardInput.boost;
 
       state.source = hasKeyboard ? "keyboard" : "none";
       return hasKeyboard ? keyboardInput : ZERO_INPUT;

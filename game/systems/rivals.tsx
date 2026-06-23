@@ -3,24 +3,28 @@
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import {
-  BoxGeometry,
+  CylinderGeometry,
   Mesh,
   MeshStandardMaterial,
   Object3D,
   Vector3,
 } from "three";
+import { CAR_DESIGNS } from "@/game/constants/cars";
 import { getChassisRestHeightAboveRoad } from "@/game/constants/spawn";
+import { VEHICLE_CONFIG } from "@/game/constants/vehicle";
+import { createCarBody } from "@/game/procedural/geometry/car-designs";
 import {
   getRoadProgress,
   ROAD_WIDTH,
   sampleRoadFrame,
 } from "@/game/procedural/geometry/road-path";
+import { rivalPositions } from "@/game/systems/rival-state";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 import { useLapStore } from "@/stores/lap-store";
 import { useRaceStore } from "@/stores/race-store";
 
-const COUNT = 5;
-const COLORS = [0xdedede, 0x2b6cb0, 0x2f855a, 0xb7791f, 0x9b2c2c];
+const COUNT = 4;
+const COLORS = ["#dedede", "#2b6cb0", "#2f855a", "#b7791f", "#9b2c2c", "#5b2a86"];
 
 interface Rival {
   group: Object3D;
@@ -30,7 +34,6 @@ interface Rival {
   lane: number;
 }
 
-/** Rival cars racing the circuit; computes the player's live standing. */
 export function Rivals() {
   const restHeight = useMemo(() => getChassisRestHeightAboveRoad(), []);
   const rivalsRef = useRef<Rival[]>([]);
@@ -42,43 +45,31 @@ export function Rivals() {
   const root = useMemo(() => {
     const g = new Object3D();
     const rivals: Rival[] = [];
-    const bodyGeo = new BoxGeometry(1.7, 0.5, 3.6);
-    const cabinGeo = new BoxGeometry(1.4, 0.45, 1.7);
-    const wheelGeo = new BoxGeometry(0.3, 0.6, 0.6);
+    const wheelGeo = new CylinderGeometry(0.36, 0.36, 0.3, 16);
+    wheelGeo.rotateZ(Math.PI / 2);
     const wheelMat = new MeshStandardMaterial({ color: 0x0c0c0e, roughness: 0.9 });
+    const wheelY = VEHICLE_CONFIG.wheels[0]!.position[1] - VEHICLE_CONFIG.suspension.restLength;
 
     for (let i = 0; i < COUNT; i++) {
       const car = new Object3D();
-      const paint = new MeshStandardMaterial({
-        color: COLORS[i % COLORS.length],
-        metalness: 0.5,
-        roughness: 0.4,
-      });
-      const body = new Mesh(bodyGeo, paint);
-      body.position.y = 0.1;
-      body.castShadow = true;
+      const design = CAR_DESIGNS[i % CAR_DESIGNS.length]!;
+      const body = createCarBody(design.id, COLORS[i % COLORS.length]!, false);
       car.add(body);
-      const cabin = new Mesh(cabinGeo, paint);
-      cabin.position.set(0, 0.5, -0.2);
-      car.add(cabin);
-      for (const [wx, wz] of [
-        [-0.85, 1.2],
-        [0.85, 1.2],
-        [-0.85, -1.2],
-        [0.85, -1.2],
-      ] as const) {
-        const w = new Mesh(wheelGeo, wheelMat);
-        w.position.set(wx, -0.2, wz);
-        car.add(w);
+      for (const w of VEHICLE_CONFIG.wheels) {
+        const wheel = new Mesh(wheelGeo, wheelMat);
+        wheel.position.set(w.position[0], wheelY, w.position[2]);
+        wheel.castShadow = true;
+        car.add(wheel);
       }
       g.add(car);
       rivals.push({
         group: car,
-        t: 0.02 + i * 0.012, // staggered grid
+        t: 0.015 + i * 0.012,
         laps: 0,
-        speed: 0.026 + (i % 3) * 0.0025, // competitive pace
+        speed: 0.022 + (i % 3) * 0.0022, // catchable pace
         lane: (i % 2 === 0 ? -1 : 1) * (ROAD_WIDTH * 0.16),
       });
+      rivalPositions[i] = { x: 0, z: 0 };
     }
     rivalsRef.current = rivals;
     return g;
@@ -88,7 +79,7 @@ export function Rivals() {
     const race = useRaceStore.getState();
     const live = race.started && !race.paused && !race.finished;
 
-    for (const r of rivalsRef.current) {
+    rivalsRef.current.forEach((r, i) => {
       if (live) {
         const nt = r.t + r.speed * dt;
         if (nt >= 1) r.laps += 1;
@@ -97,14 +88,19 @@ export function Rivals() {
       sampleRoadFrame(r.t, frame);
       const x = frame.point.x + frame.side.x * r.lane;
       const z = frame.point.z + frame.side.z * r.lane;
-      r.group.position.set(x, restHeight - 0.2, z);
+      r.group.position.set(x, restHeight, z);
       r.group.rotation.y = Math.atan2(frame.tangent.x, frame.tangent.z);
-    }
+      const slot = rivalPositions[i];
+      if (slot) {
+        slot.x = x;
+        slot.z = z;
+      }
+    });
 
-    // Live standing: compare total progress (laps + lap fraction).
     if (vehicleTarget.active) {
       const playerLaps = useLapStore.getState().lapCount;
-      const playerProgress = playerLaps + getRoadProgress(vehicleTarget.position.x, vehicleTarget.position.z);
+      const playerProgress =
+        playerLaps + getRoadProgress(vehicleTarget.position.x, vehicleTarget.position.z);
       let ahead = 0;
       for (const r of rivalsRef.current) {
         if (r.laps + r.t > playerProgress) ahead++;

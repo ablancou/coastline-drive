@@ -8,5 +8,6 @@ export const touchInput = {
   brake: 0,
   steer: 0,
   handbrake: false,
+  boost: false,
   active: false,
 };

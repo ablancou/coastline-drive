@@ -24,6 +24,8 @@ export interface VehicleSimState {
   bodyPitch: number;
   /** Visual chassis roll (body lean in corners) in radians — render only. */
   bodyRoll: number;
+  /** Nitro charge, 0..1. */
+  nitro: number;
   /** Per-wheel spring length from raycast (hub → tire contact). */
   suspensionLengths: number[];
   /** Whether each wheel ray hit a collider this step. */

@@ -8,7 +8,7 @@ import { touchInput } from "@/game/systems/touch-input";
  * channel which the input system reads. Hidden on non-touch devices via CSS.
  */
 export function TouchControls() {
-  const down = useRef({ l: false, r: false, t: false, b: false, h: false });
+  const down = useRef({ l: false, r: false, t: false, b: false, h: false, n: false });
 
   const sync = () => {
     const d = down.current;
@@ -16,16 +16,18 @@ export function TouchControls() {
     touchInput.throttle = d.t ? 1 : 0;
     touchInput.brake = d.b ? 1 : 0;
     touchInput.handbrake = d.h;
-    touchInput.active = d.l || d.r || d.t || d.b || d.h;
+    touchInput.boost = d.n;
+    touchInput.active = d.l || d.r || d.t || d.b || d.h || d.n;
   };
 
-  const press = (key: "l" | "r" | "t" | "b" | "h", value: boolean) => (e: React.PointerEvent) => {
+  type Key = "l" | "r" | "t" | "b" | "h" | "n";
+  const press = (key: Key, value: boolean) => (e: React.PointerEvent) => {
     e.preventDefault();
     down.current[key] = value;
     sync();
   };
 
-  const btn = (key: "l" | "r" | "t" | "b" | "h", cls: string, label: string) => (
+  const btn = (key: Key, cls: string, label: string) => (
     <button
       type="button"
       className={`touch-btn ${cls}`}
@@ -47,6 +49,7 @@ export function TouchControls() {
       </div>
       <div className="touch__drive">
         {btn("h", "touch-btn--handbrake", "P")}
+        {btn("n", "touch-btn--boost", "N2O")}
         {btn("b", "touch-btn--brake", "▼")}
         {btn("t", "touch-btn--throttle", "▲")}
       </div>

@@ -1368,3 +1368,52 @@ body {
   margin-bottom: 0.4rem;
   word-break: break-word;
 }
+
+/* ---- Nitro bar ---- */
+.hud__nitro {
+  position: absolute;
+  bottom: 3.2rem;
+  left: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 9rem;
+}
+
+.hud__nitro-label {
+  font-size: 0.5rem;
+  letter-spacing: 0.3em;
+  color: #6a8aa8;
+}
+
+.hud__nitro-bar {
+  height: 0.4rem;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.hud__nitro-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5b9bff, #7cffb2);
+  border-radius: 999px;
+  transition: width 0.15s linear;
+}
+
+.touch-btn--boost {
+  width: 3.7rem;
+  height: 3.7rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-color: rgba(91, 155, 255, 0.6);
+  color: #9fc4ff;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .hud__nitro {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 4.6rem;
+    width: 8rem;
+  }
+}

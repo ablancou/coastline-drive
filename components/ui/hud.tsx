@@ -26,6 +26,16 @@ export function Hud() {
         <span className="hud__speed-unit">km/h</span>
       </div>
 
+      <div className="hud__nitro" aria-hidden="true">
+        <span className="hud__nitro-label">NITRO</span>
+        <div className="hud__nitro-bar">
+          <div
+            className="hud__nitro-fill"
+            style={{ width: `${Math.round(finiteOr(snapshot.nitro, 1) * 100)}%` }}
+          />
+        </div>
+      </div>
+
       <div className="hud__telemetry">
         <TelemetryRow label="RPM" value={formatInt(snapshot.rpm, 0)} />
         <TelemetryRow label="GEAR" value={formatInt(snapshot.gear, 1)} />

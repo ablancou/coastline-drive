@@ -12,6 +12,13 @@ export const VEHICLE_CONFIG = {
   drag: 0.35,
   rollingResistance: 120,
   maxSpeedMs: 78,
+  /** Nitro boost. */
+  nitro: {
+    speedCapMult: 1.45,
+    boostAccel: 8,
+    drain: 0.5,
+    recharge: 0.16,
+  },
   /** Arcade-sim kinematic integrator tuning (Phase 1). */
   reverseMaxSpeedMs: 10,
   /** Peak yaw rate (rad/s) at full lock × full readiness. */

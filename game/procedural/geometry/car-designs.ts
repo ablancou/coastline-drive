@@ -48,7 +48,11 @@ function buildShell(width: number): ExtrudeGeometry {
 }
 
 /** Build an original roadster body for the given design id. */
-export function createCarBody(designId: string, colorHex: string | number = 0xb10f1a): Object3D {
+export function createCarBody(
+  designId: string,
+  colorHex: string | number = 0xb10f1a,
+  withDriver = true,
+): Object3D {
   const design: CarDesign = getCarDesign(designId);
   const group = new Group();
   const unit = new SphereGeometry(1, 24, 18);
@@ -151,18 +155,20 @@ export function createCarBody(designId: string, colorHex: string | number = 0xb1
   add(new BoxGeometry(0.02, 0.03, 3.0), chrome, [0.86, 0.14, -0.1]);
 
   // --- Driver figures (LHD, seated low) ---
-  const driverMan = createDriverFigure("man");
-  const driverWoman = createDriverFigure("woman");
-  for (const d of [driverMan, driverWoman]) {
-    d.position.set(0.42, -0.08, -0.34);
-    d.scale.setScalar(0.78);
-    group.add(d);
+  if (withDriver) {
+    const driverMan = createDriverFigure("man");
+    const driverWoman = createDriverFigure("woman");
+    for (const d of [driverMan, driverWoman]) {
+      d.position.set(0.42, -0.08, -0.34);
+      d.scale.setScalar(0.78);
+      group.add(d);
+    }
+    driverWoman.visible = false;
+    group.userData.driverMan = driverMan;
+    group.userData.driverWoman = driverWoman;
   }
-  driverWoman.visible = false;
 
   group.userData.paintMaterial = paint;
-  group.userData.driverMan = driverMan;
-  group.userData.driverWoman = driverWoman;
 
   return group;
 }

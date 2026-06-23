@@ -4,6 +4,8 @@ export interface InputState {
   brake: number;
   steer: number;
   handbrake: boolean;
+  /** Nitro boost held. */
+  boost: boolean;
 }
 
 export const ZERO_INPUT: InputState = {
@@ -11,4 +13,5 @@ export const ZERO_INPUT: InputState = {
   brake: 0,
   steer: 0,
   handbrake: false,
+  boost: false,
 };

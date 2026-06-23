@@ -24,6 +24,7 @@ function sanitizeTelemetry(
     brake: finiteOr(merged.brake, 0),
     steer: finiteOr(merged.steer, 0),
     handbrake: Boolean(merged.handbrake),
+    nitro: Math.min(1, Math.max(0, finiteOr(merged.nitro, 1))),
     inputSource:
       merged.inputSource === "gamepad" ||
       merged.inputSource === "keyboard" ||

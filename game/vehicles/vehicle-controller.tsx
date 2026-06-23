@@ -21,6 +21,7 @@ import {
 import { playImpact } from "@/game/procedural/audio/engine-audio";
 import { applyRaycastSuspension } from "@/game/physics/suspension-raycast";
 import { createInputSystem } from "@/game/systems/input-system";
+import { rivalPositions } from "@/game/systems/rival-state";
 import { updateVehicleTarget, vehicleTarget } from "@/game/systems/vehicle-target";
 import { clamp, finiteOr, wrapAngle } from "@/lib/math";
 import { useCustomizationStore } from "@/stores/customization-store";
@@ -62,6 +63,7 @@ function createInitialSimState(): VehicleSimState {
     velAngle: 0,
     bodyPitch: 0,
     bodyRoll: 0,
+    nitro: 1,
     suspensionLengths: VEHICLE_CONFIG.wheels.map(() => rest),
     wheelGrounded: VEHICLE_CONFIG.wheels.map(() => false),
   };
@@ -77,7 +79,7 @@ export function VehicleController() {
   const chassisRef = useRef<RapierRigidBody>(null);
   const wheelRefs = useRef<(Object3D | null)[]>([]);
   const simRef = useRef<VehicleSimState>(createInitialSimState());
-  const inputRef = useRef<InputState>({ throttle: 0, brake: 0, steer: 0, handbrake: false });
+  const inputRef = useRef<InputState>({ throttle: 0, brake: 0, steer: 0, handbrake: false, boost: false });
   const lastTelemetryFlushRef = useRef(0);
 
   const inputSystem = useMemo(() => createInputSystem(), []);
@@ -167,6 +169,7 @@ export function VehicleController() {
         brake: finiteOr(input.brake, 0),
         steer: finiteOr(input.steer, 0),
         handbrake: input.handbrake,
+        nitro: finiteOr(sim.nitro, 1),
         inputSource: inputSystem.getSource(),
       });
       lastTelemetryFlushRef.current = elapsed;
@@ -230,6 +233,16 @@ function stepVehicle(
   let speed = speedBefore;
   speed += driveAccel * dt;
 
+  // Nitro: extra push + higher speed cap while held and charged; recharges idle.
+  const boosting = input.boost && sim.nitro > 0.02 && speed > 0.5;
+  if (boosting) speed += cfg.nitro.boostAccel * dt;
+  sim.nitro = finiteOr(
+    boosting
+      ? Math.max(0, sim.nitro - cfg.nitro.drain * dt)
+      : Math.min(1, sim.nitro + cfg.nitro.recharge * dt),
+    sim.nitro,
+  );
+
   // Drag + rolling resistance always oppose current motion.
   const resist =
     ((cfg.drag * speed * speed) / cfg.mass +
@@ -253,7 +266,8 @@ function stepVehicle(
     else if (speed < 0) speed = Math.min(0, speed + handbrakeAccel * dt);
   }
 
-  speed = clamp(finiteOr(speed, 0), -cfg.reverseMaxSpeedMs, cfg.maxSpeedMs);
+  const speedCap = cfg.maxSpeedMs * (boosting ? cfg.nitro.speedCapMult : 1);
+  speed = clamp(finiteOr(speed, 0), -cfg.reverseMaxSpeedMs, speedCap);
 
   // --- Steering: smoothed wheel angle → yaw rate scaled by speed readiness. ---
   const targetSteer = input.steer * cfg.maxSteerAngle;
@@ -290,6 +304,26 @@ function stepVehicle(
   const fwdZ = Math.cos(velAngle);
   let nx = pos.x + fwdX * speed * dt;
   let nz = pos.z + fwdZ * speed * dt;
+
+  // Soft collision with rival cars — push out of their radius, scrub speed.
+  const RIVAL_R = 2.7;
+  for (const rp of rivalPositions) {
+    const dx = nx - rp.x;
+    const dz = nz - rp.z;
+    const d2 = dx * dx + dz * dz;
+    if (d2 < RIVAL_R * RIVAL_R && d2 > 1e-3) {
+      const d = Math.sqrt(d2);
+      nx = rp.x + (dx / d) * RIVAL_R;
+      nz = rp.z + (dz / d) * RIVAL_R;
+      speed *= 0.55;
+      sim.speedMs = speed;
+      if (impactCooldown <= 0) {
+        playImpact(0.5);
+        vehicleTarget.shake = Math.max(vehicleTarget.shake, 0.45);
+        impactCooldown = 20;
+      }
+    }
+  }
 
   getRoadSurfaceAt(nx, nz, _surface);
   const lateral =
