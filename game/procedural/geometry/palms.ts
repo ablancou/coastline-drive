@@ -47,7 +47,7 @@ export function buildPalms(count = 34): Group {
     const trunk = new Mesh(trunkGeo, trunkMat);
     trunk.scale.set(1, h, 1);
     trunk.position.y = h / 2;
-    trunk.castShadow = true;
+    trunk.castShadow = false;
     palm.add(trunk);
 
     // Two tiers of drooping fronds for a fuller crown.
@@ -66,7 +66,7 @@ export function buildPalms(count = 34): Group {
         frond.rotation.x = Math.PI / 2 + tier.droop; // outward + droop
         frond.position.z = tier.reach;
         frond.scale.set(1, 1, 0.25); // flatten into a leaf
-        frond.castShadow = true;
+        frond.castShadow = false;
         holder.add(frond);
         palm.add(holder);
       }

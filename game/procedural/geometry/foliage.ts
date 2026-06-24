@@ -30,7 +30,7 @@ function createCactus(h: number): Object3D {
   const g = new Group();
   const body = new Mesh(new CylinderGeometry(0.28, 0.34, h, 8), cactusMat);
   body.position.y = h / 2;
-  body.castShadow = true;
+  body.castShadow = false;
   g.add(body);
   for (const side of [-1, 1]) {
     if (hash01(h * 10, side) < 0.5) continue;
@@ -53,7 +53,7 @@ function createCypress(h: number): Object3D {
   g.add(trunk);
   const top = new Mesh(new ConeGeometry(h * 0.22, h * 0.85, 8), cypressMat);
   top.position.y = h * 0.6;
-  top.castShadow = true;
+  top.castShadow = false;
   g.add(top);
   return g;
 }
@@ -96,7 +96,7 @@ function createPalmStub(i: number): Object3D {
   const h = 3 + hash01(i, 6.6) * 1.5;
   const trunk = new Mesh(new CylinderGeometry(0.12, 0.2, h, 7), trunkMat);
   trunk.position.y = h / 2;
-  trunk.castShadow = true;
+  trunk.castShadow = false;
   g.add(trunk);
   const frondMat = new MeshStandardMaterial({ color: 0x2f9d54, roughness: 0.7 });
   const frondGeo = new ConeGeometry(0.26, 2.4, 4);

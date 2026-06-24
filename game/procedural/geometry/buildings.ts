@@ -55,7 +55,7 @@ export function buildBuildings(count = 18): Object3D {
       }),
     );
     body.position.y = h / 2;
-    body.castShadow = true;
+    body.castShadow = false;
     body.receiveShadow = true;
     b.add(body);
 

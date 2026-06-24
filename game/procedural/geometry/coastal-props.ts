@@ -57,7 +57,7 @@ export function buildCoastalProps(): Group {
 
     const boat = new Group();
     const hull = new Mesh(hullGeo, hullMat);
-    hull.castShadow = true;
+    hull.castShadow = false;
     boat.add(hull);
     const stripe = new Mesh(deckGeo, trimMat);
     stripe.position.y = 0.12;
@@ -95,7 +95,7 @@ export function buildCoastalProps(): Group {
       new MeshStandardMaterial({ color: PARASOL_COLORS[colorIdx] ?? 0xe8503a, roughness: 0.8 }),
     );
     canopy.position.y = 2;
-    canopy.castShadow = true;
+    canopy.castShadow = false;
     parasol.add(canopy);
     parasol.position.set(x, groundY, z);
     parasol.rotation.z = (hash01(i, 8.8) - 0.5) * 0.15;
@@ -115,7 +115,7 @@ export function buildCoastalProps(): Group {
     const pier = new Group();
     const deck = new Mesh(deckGeo2, woodMat);
     deck.position.y = 0.05;
-    deck.castShadow = true;
+    deck.castShadow = false;
     pier.add(deck);
     for (let s = -1; s <= 1; s++) {
       for (const sx of [-0.8, 0.8]) {
@@ -152,7 +152,7 @@ export function buildCoastalProps(): Group {
     }
     const roof = new Mesh(roofGeo, thatchMat);
     roof.position.y = 2.7;
-    roof.castShadow = true;
+    roof.castShadow = false;
     palapa.add(roof);
     palapa.position.set(x, groundY, z);
     palapa.rotation.y = hash01(i, 15.5) * Math.PI;
