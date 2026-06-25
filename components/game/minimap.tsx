@@ -42,13 +42,14 @@ export function Minimap() {
       VB / 2 + (x - cx) * scale,
       VB / 2 + (z - cz) * scale,
     ];
-    const path =
-      pts
-        .map((pt, i) => `${i === 0 ? "M" : "L"}${project(pt[0], pt[1]).map((n) => n.toFixed(1)).join(" ")}`)
-        .join(" ") + " Z";
+    const path = pts
+      .map((pt, i) => `${i === 0 ? "M" : "L"}${project(pt[0], pt[1]).map((n) => n.toFixed(1)).join(" ")}`)
+      .join(" ");
     curve.getPoint(SPAWN_T, p);
     const start = project(p.x, p.z);
-    return { path, project, start };
+    curve.getPoint(1, p);
+    const finish = project(p.x, p.z);
+    return { path, project, start, finish };
   }, [trackId]);
 
   useEffect(() => {
@@ -70,6 +71,7 @@ export function Minimap() {
       <svg viewBox={`0 0 ${VB} ${VB}`} width="100%" height="100%">
         <path d={data.path} className="minimap__track" />
         <circle cx={data.start[0]} cy={data.start[1]} r="2.6" className="minimap__start" />
+        <circle cx={data.finish[0]} cy={data.finish[1]} r="2.8" className="minimap__finish" />
         <circle ref={dotRef} cx="50" cy="50" r="3.2" className="minimap__car" />
       </svg>
     </div>

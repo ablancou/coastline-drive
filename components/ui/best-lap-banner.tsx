@@ -29,7 +29,7 @@ export function BestLapBanner() {
 
   return (
     <div className="best-banner" role="status">
-      <span className="best-banner__title">¡MEJOR VUELTA!</span>
+      <span className="best-banner__title">¡RÉCORD!</span>
       <span className="best-banner__time">{formatLap(bestLapMs)}</span>
     </div>
   );

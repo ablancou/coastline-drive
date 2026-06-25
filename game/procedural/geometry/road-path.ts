@@ -17,14 +17,12 @@ const _up = new Vector3(0, 1, 0);
 
 let _activeTrack: Track = DEFAULT_TRACK;
 let _cachedCurve: CatmullRomCurve3 | null = null;
-let _interiorSign = 0;
 
-/** Switch the active circuit (resets the cached curve + interior sign). */
+/** Switch the active coastal road (resets the cached curve). */
 export function setActiveTrack(track: Track): void {
   if (track.id === _activeTrack.id) return;
   _activeTrack = track;
   _cachedCurve = null;
-  _interiorSign = 0;
 }
 
 export function getActiveTrack(): Track {
@@ -34,7 +32,8 @@ export function getActiveTrack(): Track {
 export function getRoadCurve(): CatmullRomCurve3 {
   if (!_cachedCurve) {
     const pts = _activeTrack.points.map(([x, z]) => new Vector3(x, ROAD_SURFACE_Y, z));
-    _cachedCurve = new CatmullRomCurve3(pts, true, "catmullrom", 0.5);
+    // Open coastal road (point-to-point), not a closed loop.
+    _cachedCurve = new CatmullRomCurve3(pts, false, "catmullrom", 0.5);
   }
   return _cachedCurve;
 }
@@ -121,31 +120,12 @@ export function getRoadProgress(x: number, z: number): number {
 }
 
 /**
- * +1 or -1: the world-space sign of the road `side` vector that points toward
- * the loop interior (where cliffs rise). Computed once from the loop centroid.
+ * +1 or -1: which `side` of the open coastal road is land/cliffs. The opposite
+ * side is the sea. Fixed so the ocean stays on the same side the whole drive.
+ * (Flip this sign if the sea ends up on the wrong side.)
  */
 export function getRoadInteriorSign(): number {
-  if (_interiorSign !== 0) return _interiorSign;
-
-  const curve = getRoadCurve();
-  let cx = 0;
-  let cz = 0;
-  const samples = 64;
-  for (let i = 0; i < samples; i++) {
-    curve.getPoint(i / samples, _point);
-    cx += _point.x;
-    cz += _point.z;
-  }
-  cx /= samples;
-  cz /= samples;
-
-  curve.getPoint(0, _point);
-  curve.getTangent(0, _tangent).normalize();
-  _side.crossVectors(_up, _tangent).normalize();
-  const lateralOfCentroid = (cx - _point.x) * _side.x + (cz - _point.z) * _side.z;
-  // Negated so the sea (exterior) sits on the driver's right while cruising.
-  _interiorSign = lateralOfCentroid >= 0 ? -1 : 1;
-  return _interiorSign;
+  return -1;
 }
 
 const _lateralScratch: RoadSurfaceSample = {

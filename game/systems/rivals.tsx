@@ -20,7 +20,6 @@ import {
 } from "@/game/procedural/geometry/road-path";
 import { rivalPositions } from "@/game/systems/rival-state";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
-import { useLapStore } from "@/stores/lap-store";
 import { useRaceStore } from "@/stores/race-store";
 
 const COUNT = 4;
@@ -65,9 +64,9 @@ export function Rivals() {
       g.add(car);
       rivals.push({
         group: car,
-        t: 0.015 + i * 0.012,
+        t: 0.01 + i * 0.012,
         laps: 0,
-        speed: 0.022 + (i % 3) * 0.0022, // catchable pace
+        speed: 0.05 + (i % 3) * 0.013, // reaches the finish in ~13-20s
         lane: (i % 2 === 0 ? -1 : 1) * (ROAD_WIDTH * 0.16),
       });
       rivalPositions[i] = { x: 0, z: 0 };
@@ -86,9 +85,7 @@ export function Rivals() {
 
     rivalsRef.current.forEach((r, i) => {
       if (live) {
-        const nt = r.t + r.speed * dt;
-        if (nt >= 1) r.laps += 1;
-        r.t = nt % 1;
+        r.t = Math.min(1, r.t + r.speed * dt); // drive to the finish, then stop
       }
       sampleRoadFrame(r.t, frame);
       const x = frame.point.x + frame.side.x * r.lane;
@@ -103,12 +100,10 @@ export function Rivals() {
     });
 
     if (vehicleTarget.active) {
-      const playerLaps = useLapStore.getState().lapCount;
-      const playerProgress =
-        playerLaps + getRoadProgress(vehicleTarget.position.x, vehicleTarget.position.z);
+      const playerProgress = getRoadProgress(vehicleTarget.position.x, vehicleTarget.position.z);
       let ahead = 0;
       for (const r of rivalsRef.current) {
-        if (r.laps + r.t > playerProgress) ahead++;
+        if (r.t > playerProgress) ahead++;
       }
       race.setStanding(ahead + 1, COUNT + 1);
     }

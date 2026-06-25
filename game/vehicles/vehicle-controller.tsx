@@ -115,6 +115,23 @@ export function VehicleController() {
     paint?.color.set(carColor);
   }, [bodyGroup, carColor]);
 
+  // Respawn the car at the start on each fresh run (restart / mode change).
+  const runId = useRaceStore((s) => s.runId);
+  useEffect(() => {
+    const chassis = chassisRef.current;
+    if (!chassis) return;
+    const half = spawnPose.rotationY * 0.5;
+    chassis.setTranslation(
+      { x: spawnPose.position.x, y: spawnPose.position.y, z: spawnPose.position.z },
+      true,
+    );
+    chassis.setRotation({ x: 0, y: Math.sin(half), z: 0, w: Math.cos(half) }, true);
+    const fresh = createInitialSimState();
+    fresh.heading = spawnPose.rotationY;
+    fresh.velAngle = spawnPose.rotationY;
+    simRef.current = fresh;
+  }, [runId, spawnPose]);
+
   // Swap driver figure.
   useEffect(() => {
     const man = bodyGroup.userData.driverMan as Object3D | undefined;

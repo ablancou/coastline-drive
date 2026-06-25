@@ -43,8 +43,6 @@ export function GameShell() {
   const hudHidden = useSceneStore((s) => s.hudHidden);
   const lastLapMs = useLapStore((s) => s.lastLapMs);
   const bestLapMs = useLapStore((s) => s.bestLapMs);
-  const raceTotalMs = useLapStore((s) => s.raceTotalMs);
-  const lapCount = useLapStore((s) => s.lapCount);
 
   const beginRun = useCallback(() => {
     useLapStore.getState().reset();
@@ -128,7 +126,7 @@ export function GameShell() {
           {finished && (
             <div className="overlay">
               <div className="overlay__panel">
-                <h2 className="overlay__title overlay__title--win">¡CARRERA TERMINADA!</h2>
+                <h2 className="overlay__title overlay__title--win">¡META!</h2>
                 <div className="overlay__stats">
                   {totalRacers > 1 && (
                     <div className="overlay__stat">
@@ -139,20 +137,12 @@ export function GameShell() {
                     </div>
                   )}
                   <div className="overlay__stat">
-                    <span>VUELTAS</span>
-                    <b>{lapCount}</b>
-                  </div>
-                  <div className="overlay__stat">
-                    <span>TIEMPO TOTAL</span>
-                    <b>{formatLap(raceTotalMs)}</b>
-                  </div>
-                  <div className="overlay__stat">
-                    <span>MEJOR VUELTA</span>
-                    <b className="overlay__best">{formatLap(bestLapMs)}</b>
-                  </div>
-                  <div className="overlay__stat">
-                    <span>ÚLTIMA</span>
+                    <span>TIEMPO</span>
                     <b>{formatLap(lastLapMs)}</b>
+                  </div>
+                  <div className="overlay__stat">
+                    <span>MEJOR</span>
+                    <b className="overlay__best">{formatLap(bestLapMs)}</b>
                   </div>
                 </div>
                 <button className="start__cta" onClick={beginRun}>

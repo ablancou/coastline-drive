@@ -13,6 +13,8 @@ interface RaceStore {
   totalRacers: number;
   /** Time-trial: no rivals, focus on best lap. */
   timeTrial: boolean;
+  /** Increments on each fresh run — the car respawns at the start. */
+  runId: number;
   setTimeTrial: (v: boolean) => void;
   setTargetLaps: (n: number) => void;
   setPaused: (v: boolean) => void;
@@ -32,6 +34,7 @@ export const useRaceStore = create<RaceStore>((set) => ({
   position: 1,
   totalRacers: 1,
   timeTrial: false,
+  runId: 0,
   setTimeTrial: (v) => set({ timeTrial: v }),
   setTargetLaps: (n) => set({ targetLaps: Math.max(0, n) }),
   setPaused: (v) => set({ paused: v }),
@@ -39,5 +42,6 @@ export const useRaceStore = create<RaceStore>((set) => ({
   setFinished: (v) => set({ finished: v }),
   setStarted: (v) => set({ started: v }),
   setStanding: (position, totalRacers) => set({ position, totalRacers }),
-  resetRun: () => set({ paused: false, finished: false, started: false, position: 1 }),
+  resetRun: () =>
+    set((s) => ({ paused: false, finished: false, started: false, position: 1, runId: s.runId + 1 })),
 }));

@@ -12,13 +12,6 @@ import { useLapStore } from "@/stores/lap-store";
 import { useRaceStore } from "@/stores/race-store";
 import { useSceneStore } from "@/stores/scene-store";
 
-const LAP_OPTIONS: { label: string; value: number }[] = [
-  { label: "Libre", value: 0 },
-  { label: "3", value: 3 },
-  { label: "5", value: 5 },
-  { label: "10", value: 10 },
-];
-
 function formatLap(ms: number | undefined): string {
   if (ms == null || !Number.isFinite(ms)) return "—";
   const m = Math.floor(ms / 60000);
@@ -43,8 +36,6 @@ export function Garage({ onStart, onBack }: GarageProps) {
   const night = useSceneStore((s) => s.night);
   const setNight = useSceneStore((s) => s.setNight);
   const bestByTrack = useLapStore((s) => s.bestByTrack);
-  const targetLaps = useRaceStore((s) => s.targetLaps);
-  const setTargetLaps = useRaceStore((s) => s.setTargetLaps);
   const timeTrial = useRaceStore((s) => s.timeTrial);
   const setTimeTrial = useRaceStore((s) => s.setTimeTrial);
   const [showRecords, setShowRecords] = useState(false);
@@ -151,22 +142,6 @@ export function Garage({ onStart, onBack }: GarageProps) {
               >
                 Contrarreloj
               </button>
-            </div>
-          </section>
-
-          <section className="garage__section">
-            <span className="custom__label">VUELTAS</span>
-            <div className="custom__toggle">
-              {LAP_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`pill${targetLaps === opt.value ? " pill--active" : ""}`}
-                  onClick={() => setTargetLaps(opt.value)}
-                >
-                  {opt.label}
-                </button>
-              ))}
             </div>
           </section>
 

@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useLapStore } from "@/stores/lap-store";
-import { useRaceStore } from "@/stores/race-store";
 
-/** HUD lap timer — live current lap, last lap, best lap. DOM only. */
+/** HUD sprint timer — live run time + best A→B time. DOM only. */
 export function LapTimer() {
-  const { lapStartPerf, timing, lastLapMs, bestLapMs, lapCount } = useLapStore();
-  const targetLaps = useRaceStore((s) => s.targetLaps);
+  const { lapStartPerf, timing, bestLapMs } = useLapStore();
   const [now, setNow] = useState(0);
 
   // Self-tick for the live timer (display only — not on the physics hot path).
@@ -22,26 +20,16 @@ export function LapTimer() {
   }, []);
 
   const currentMs = timing ? Math.max(0, now - lapStartPerf) : 0;
-  const isBest = bestLapMs != null && lastLapMs != null && lastLapMs <= bestLapMs;
 
   return (
     <div className="lap">
       <div className="lap__current">
-        <span className="lap__eyebrow">
-          LAP {lapCount + 1}
-          {targetLaps > 0 ? ` / ${targetLaps}` : ""}
-        </span>
+        <span className="lap__eyebrow">RECORRIDO</span>
         <span className="lap__time">{formatLap(currentMs)}</span>
       </div>
       <div className="lap__rows">
         <div className="lap__row">
-          <span className="lap__label">LAST</span>
-          <span className={`lap__value${isBest ? " lap__value--best" : ""}`}>
-            {formatLap(lastLapMs)}
-          </span>
-        </div>
-        <div className="lap__row">
-          <span className="lap__label">BEST</span>
+          <span className="lap__label">MEJOR</span>
           <span className="lap__value lap__value--best">{formatLap(bestLapMs)}</span>
         </div>
       </div>

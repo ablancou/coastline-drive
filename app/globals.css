@@ -1443,3 +1443,14 @@ body {
 .records__time--set {
   color: #7cffb2;
 }
+
+/* ---- Minimap open road extras ---- */
+.minimap__track {
+  stroke-linecap: round;
+}
+
+.minimap__finish {
+  fill: #e85d4a;
+  stroke: #ffffff;
+  stroke-width: 1;
+}
