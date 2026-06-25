@@ -125,7 +125,7 @@ export function getRoadProgress(x: number, z: number): number {
  * (Flip this sign if the sea ends up on the wrong side.)
  */
 export function getRoadInteriorSign(): number {
-  return -1;
+  return 1;
 }
 
 const _lateralScratch: RoadSurfaceSample = {

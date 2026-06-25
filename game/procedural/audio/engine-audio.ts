@@ -66,7 +66,7 @@ function build(): EngineAudioGraph {
     frequency: 600,
     Q: 6,
   });
-  const engineGain = new GainNode(ctx, { gain: 0.12 });
+  const engineGain = new GainNode(ctx, { gain: 0.06 });
   lowpass.connect(engineGain).connect(master);
 
   const oscA = new OscillatorNode(ctx, { type: "sawtooth", frequency: 40 });
@@ -152,7 +152,7 @@ export function startEngineAudio(): void {
     // Fade master in.
     const now = graph.ctx.currentTime;
     graph.master.gain.cancelScheduledValues(now);
-    graph.master.gain.setTargetAtTime(muted ? 0 : 0.5, now, 0.3);
+    graph.master.gain.setTargetAtTime(muted ? 0 : 0.42, now, 0.3);
   } catch {
     running = false;
   }
@@ -215,7 +215,7 @@ export function setEngineAudioMuted(value: boolean): void {
   muted = value;
   if (!graph) return;
   const now = graph.ctx.currentTime;
-  graph.master.gain.setTargetAtTime(muted ? 0 : 0.5, now, 0.1);
+  graph.master.gain.setTargetAtTime(muted ? 0 : 0.42, now, 0.1);
 }
 
 export function toggleEngineAudioMuted(): boolean {
@@ -280,8 +280,8 @@ export function updateEngineAudio(
 
   // Throttle opens the filter (brighter under load) and lifts engine gain.
   const rpmNorm = Math.min(1, safeRpm / cfg.maxRpm);
-  g.lowpass.frequency.setTargetAtTime(500 + rpmNorm * 3200 + thr * 1600, t, 0.05);
-  g.engineGain.gain.setTargetAtTime(0.1 + thr * 0.14, t, 0.08);
+  g.lowpass.frequency.setTargetAtTime(360 + rpmNorm * 1500 + thr * 700, t, 0.05);
+  g.engineGain.gain.setTargetAtTime(0.045 + thr * 0.07, t, 0.08);
 
   // Wind grows with speed; tire roll + screech with speed and cornering/handbrake.
   const speedNorm = Math.min(1, safeSpeed / 220);

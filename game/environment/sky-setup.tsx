@@ -24,6 +24,7 @@ export function SkySetup() {
   const sun = useRef<DirectionalLight>(null);
   const hemi = useRef<HemisphereLight>(null);
   const sky = useMemo(() => makeSkyState(), []);
+  const camera = useThree((s) => s.camera);
 
   useEffect(() => {
     scene.backgroundRotation.set(0, preset.rotationY, 0);
@@ -40,7 +41,14 @@ export function SkySetup() {
     if (s) {
       s.intensity = sky.sunIntensity;
       s.color.copy(sky.sunColor);
-      s.position.set(sky.sunX, sky.sunY, sky.sunZ);
+      // Keep the shadow frustum centered on the car (≈ camera ground focus) so
+      // shadows stay crisp along the whole long coastal road instead of fading
+      // out past a fixed box at the world origin.
+      const fx = camera.position.x;
+      const fz = camera.position.z;
+      s.position.set(fx + sky.sunX, sky.sunY, fz + sky.sunZ);
+      s.target.position.set(fx, 0, fz);
+      s.target.updateMatrixWorld();
     }
     if (hemi.current) {
       hemi.current.intensity = sky.hemiIntensity;
@@ -76,10 +84,10 @@ export function SkySetup() {
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
         shadow-camera-far={700}
-        shadow-camera-left={-260}
-        shadow-camera-right={260}
-        shadow-camera-top={260}
-        shadow-camera-bottom={-260}
+        shadow-camera-left={-150}
+        shadow-camera-right={150}
+        shadow-camera-top={150}
+        shadow-camera-bottom={-150}
         shadow-bias={-0.0004}
       />
     </>

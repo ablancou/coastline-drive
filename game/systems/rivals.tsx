@@ -66,7 +66,7 @@ export function Rivals() {
         group: car,
         t: 0.01 + i * 0.012,
         laps: 0,
-        speed: 0.05 + (i % 3) * 0.013, // reaches the finish in ~13-20s
+        speed: 0.027 + (i % 3) * 0.007, // paced for the longer road (~25-37s)
         lane: (i % 2 === 0 ? -1 : 1) * (ROAD_WIDTH * 0.16),
       });
       rivalPositions[i] = { x: 0, z: 0 };

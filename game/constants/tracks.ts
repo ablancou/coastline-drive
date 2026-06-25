@@ -12,7 +12,17 @@ export interface Track {
   points: [number, number][];
 }
 
-export const TRACKS: Track[] = [
+/**
+ * Distance the whole coastal road is stretched along Z. The base control-point
+ * tables below were authored across z ∈ [-250, 250]; this scale lengthens the
+ * drive (the curve gets correspondingly longer) without re-authoring points.
+ * Keep terrain depth / shadow-camera / ocean coverage in sync with TRACK_HALF_Z.
+ */
+export const TRACK_LENGTH_SCALE = 1.85;
+/** Half the Z-extent of a road after scaling (≈ base 250 × scale). */
+export const TRACK_HALF_Z = 250 * TRACK_LENGTH_SCALE;
+
+const BASE_TRACKS: Track[] = [
   { id: "acapulco", name: "Acapulco · Zona Diamante", points: [[-10, -250], [-33, -221], [-52, -191], [-65, -162], [-70, -132], [-66, -103], [-54, -74], [-35, -44], [-12, -15], [12, 15], [35, 44], [54, 74], [66, 103], [70, 132], [65, 162], [52, 191], [33, 221], [10, 250]] },
   { id: "cancun", name: "Cancún · Costera", points: [[-26, -250], [-25, -221], [-24, -191], [-20, -162], [-16, -132], [-11, -103], [-5, -74], [1, -44], [7, -15], [13, 15], [18, 44], [22, 74], [24, 103], [26, 132], [26, 162], [24, 191], [22, 221], [18, 250]] },
   { id: "los_cabos", name: "Los Cabos · Corredor", points: [[-13, -250], [-53, -221], [-81, -191], [-92, -162], [-83, -132], [-55, -103], [-16, -74], [27, -44], [64, -15], [87, 15], [91, 44], [76, 74], [44, 103], [2, 132], [-40, 162], [-73, 191], [-90, 221], [-88, 250]] },
@@ -24,6 +34,19 @@ export const TRACKS: Track[] = [
   { id: "amalfi", name: "Amalfi · Costiera", points: [[55, -250], [6, -221], [-45, -191], [-80, -162], [-89, -132], [-68, -103], [-24, -74], [28, -44], [71, -15], [90, 15], [78, 44], [41, 74], [-11, 103], [-58, 132], [-87, 162], [-86, 191], [-56, 221], [-7, 250]] },
   { id: "portofino", name: "Portofino · Litoral", points: [[51, -250], [72, -221], [58, -191], [17, -162], [-32, -132], [-66, -103], [-69, -74], [-38, -44], [11, -15], [54, 15], [72, 44], [55, 74], [12, 103], [-37, 132], [-68, 162], [-67, 191], [-34, 221], [15, 250]] },
 ];
+
+/**
+ * Stretch the authored roads along Z so each drive is meaningfully longer.
+ * X is scaled a touch too (so curves keep their proportions instead of looking
+ * pinched), but less than Z so the road still runs mostly seaward-parallel.
+ */
+export const TRACKS: Track[] = BASE_TRACKS.map((t) => ({
+  ...t,
+  points: t.points.map(([x, z]) => [
+    Math.round(x * 1.25 * 100) / 100,
+    Math.round(z * TRACK_LENGTH_SCALE * 100) / 100,
+  ]) as [number, number][],
+}));
 
 export const DEFAULT_TRACK = TRACKS[0]!;
 
