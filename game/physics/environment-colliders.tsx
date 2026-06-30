@@ -8,7 +8,7 @@ import { createTerrainGeometry } from "@/game/procedural/geometry/terrain";
 export function EnvironmentColliders() {
   // Lower-resolution trimesh for the collider (the kinematic car doesn't use it
   // for ground contact, but keep it light for any future dynamic bodies).
-  const terrainGeometry = useMemo(() => createTerrainGeometry(360, 1040, 96), []);
+  const terrainGeometry = useMemo(() => createTerrainGeometry(480, 1040, 110), []);
 
   return (
     <RigidBody type="fixed" colliders={false} friction={0.9} restitution={0.0}>

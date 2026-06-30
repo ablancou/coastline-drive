@@ -2,12 +2,15 @@ import { BufferAttribute, BufferGeometry, PlaneGeometry } from "three";
 import {
   getLateralOffsetFromRoad,
   ROAD_WIDTH,
+  signedDistanceToCoast,
 } from "@/game/procedural/geometry/road-path";
 
 /** Road spline surface height (ROAD_POINTS are at y = 0.02). */
 const ROAD_SURFACE_Y = 0.02;
 /** Flat corridor half-width (road + shoulder) kept below the asphalt. */
 const ROAD_CORRIDOR_HALF = ROAD_WIDTH * 0.5 + 1.5;
+/** Shoreline height — just above the ocean plane (y = -1.5) so the sea laps it. */
+const WATER_BASE = -0.7;
 
 function noise2D(x: number, z: number): number {
   return (
@@ -25,26 +28,48 @@ function fractalNoise(x: number, z: number): number {
   );
 }
 
-/** Shared height sampler for terrain mesh and cliff rocks. */
-export function cliffHeightAt(x: number, z: number): number {
-  const lateral = getLateralOffsetFromRoad(x, z);
-  const inland = Math.max(0, lateral - 5);
-  const cliffMask = Math.min(1, inland / 18);
-  const cliffSteepness = cliffMask * cliffMask * 12;
-  const baseNoise = fractalNoise(x, z) * (2 + cliffMask * 4);
-  const oceanShelf = Math.max(0, -lateral - 6) * 0.15;
-  const natural = baseNoise + cliffSteepness - oceanShelf - 1.1;
+/**
+ * Natural terrain height from the FIXED coastline. `sd` is signed distance to
+ * the shore (+ inland, − out to sea). The sea slopes down beneath the ocean
+ * plane; near shore is a gentle beach/promenade; cliffs only rise as a distant
+ * backdrop (far inland) so the road + city stay on plausible, drivable ground.
+ */
+export function naturalCoastHeight(sd: number, x: number, z: number): number {
+  if (sd <= 0) return WATER_BASE + sd * 0.3; // seaward: descend under the water
+  const cliffMask = Math.min(1, Math.max(0, (sd - 60) / 55));
+  const cliff = cliffMask * cliffMask * 16;
+  const noise = fractalNoise(x, z) * (1.1 + cliffMask * 3.5);
+  return WATER_BASE + sd * 0.045 + cliff + noise;
+}
 
-  // Carve a flat corridor under the road so terrain never pokes through the
-  // asphalt (prevents the green z-fighting patches). Sits just below road level
-  // and smoothly blends into the natural terrain past the shoulder.
+/**
+ * Final terrain height given the unsigned distance to the road (`absRoad`) and
+ * the signed distance to the shore (`sd`). Carves a flat corridor under the road
+ * wherever it runs (incl. inland city detours) so terrain never pokes through
+ * the asphalt, then blends out to the coast-driven natural terrain.
+ */
+export function corridorBlendedHeight(
+  absRoad: number,
+  sd: number,
+  x: number,
+  z: number,
+): number {
   const corridorFloor = ROAD_SURFACE_Y - 0.25;
-  const absLat = Math.abs(lateral);
-  if (absLat <= ROAD_CORRIDOR_HALF) return corridorFloor;
-
-  const k = Math.min(1, (absLat - ROAD_CORRIDOR_HALF) / 6);
+  if (absRoad <= ROAD_CORRIDOR_HALF) return corridorFloor;
+  const natural = naturalCoastHeight(sd, x, z);
+  const k = Math.min(1, (absRoad - ROAD_CORRIDOR_HALF) / 14);
   const blend = k * k * (3 - 2 * k); // smoothstep
   return corridorFloor * (1 - blend) + natural * blend;
+}
+
+/** Shared height sampler for terrain mesh and cliff rocks. */
+export function cliffHeightAt(x: number, z: number): number {
+  return corridorBlendedHeight(
+    Math.abs(getLateralOffsetFromRoad(x, z)),
+    signedDistanceToCoast(x, z),
+    x,
+    z,
+  );
 }
 
 export interface TerrainBiome {
@@ -77,34 +102,40 @@ export function createTerrainGeometry(
   for (let i = 0; i < positions.count; i++) {
     const x = positions.getX(i);
     const z = positions.getZ(i);
-    const height = cliffHeightAt(x, z);
-    positions.setY(i, height);
+    // Compute both distances once and reuse for height + colour (each is a
+    // nearest-point search over a spline, so avoid doing them twice).
+    const absRoad = Math.abs(getLateralOffsetFromRoad(x, z));
+    const sd = signedDistanceToCoast(x, z);
+    positions.setY(i, corridorBlendedHeight(absRoad, sd, x, z));
 
-    const lateral = getLateralOffsetFromRoad(x, z);
-    const inland = Math.max(0, lateral - 4);
+    // Colour by distance to the fixed shore: sand at the beach, grass inland,
+    // rock on the far cliffs. Sea-side vertices read as wet sand through water.
     const G = biome.grass;
     const R = biome.rock;
     const S = biome.sand;
 
-    let r = G[0];
-    let g = G[1];
-    let b = G[2];
+    let r: number;
+    let g: number;
+    let b: number;
 
-    if (inland > 2) {
-      const t = Math.min(1, (inland - 2) / 12); // grass → rock as it climbs
-      r = G[0] + (R[0] - G[0]) * t;
-      g = G[1] + (R[1] - G[1]) * t;
-      b = G[2] + (R[2] - G[2]) * t;
-    }
-    if (inland > 10) {
-      r = R[0] + fractalNoise(x, z) * 0.05;
-      g = R[1] + fractalNoise(z, x) * 0.04;
-      b = R[2];
-    }
-    if (lateral < -6) {
+    if (sd < 5) {
+      // Beach / waterline band (and submerged sand seaward of the shore).
       r = S[0];
       g = S[1];
       b = S[2];
+    } else {
+      // Sand → grass over the first stretch inland.
+      const t = Math.min(1, (sd - 5) / 14);
+      r = S[0] + (G[0] - S[0]) * t;
+      g = S[1] + (G[1] - S[1]) * t;
+      b = S[2] + (G[2] - S[2]) * t;
+    }
+    if (sd > 50) {
+      // Grass → rock as the distant cliffs climb.
+      const t = Math.min(1, (sd - 50) / 40);
+      r = G[0] + (R[0] - G[0]) * t + fractalNoise(x, z) * 0.05 * t;
+      g = G[1] + (R[1] - G[1]) * t + fractalNoise(z, x) * 0.04 * t;
+      b = G[2] + (R[2] - G[2]) * t;
     }
 
     colors[i * 3] = r;

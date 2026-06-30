@@ -9,11 +9,11 @@ import { MeshStandardMaterial } from "three";
 export function createOceanMaterial(): MeshStandardMaterial {
   const mat = new MeshStandardMaterial({
     color: 0x1f6f9e,
-    metalness: 0.2,
-    roughness: 0.12,
+    metalness: 0.25,
+    roughness: 0.07,
     transparent: true,
-    opacity: 0.95,
-    envMapIntensity: 1.3,
+    opacity: 0.92,
+    envMapIntensity: 1.6,
   });
 
   mat.userData.uTime = { value: 0 };

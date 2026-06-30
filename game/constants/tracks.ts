@@ -1,52 +1,110 @@
 /**
- * One unique OPEN coastal road per destination (point-to-point, not a loop).
- * The car drives from start to finish with the sea always on one side. Roads
- * run roughly along Z with an X wiggle for character; everything (road, terrain,
- * cliffs, guardrails, colliders, spawn, minimap, rivals) is generated from the
- * active road's control points. All share ROAD_WIDTH / ROAD_SEGMENTS / SPAWN_T.
+ * One unique coastal location per destination. Unlike the old road-relative
+ * model, each location now has a FIXED geographic coastline (the shoreline) plus
+ * a drivable road that mostly hugs that coast — with the sea always looking out
+ * to one side — and occasionally swings inland through city blocks before
+ * returning to the seafront. Terrain, beach and ocean are generated from the
+ * coastline; the car drives the road. The two are authored from a compact spec
+ * so every destination feels distinct without hand-placing hundreds of points.
  */
 export interface Track {
   id: string;
   name: string;
-  /** Open control points [x, z] from start to finish (road surface y is fixed). */
+  /** Drivable road control points [x, z], start → finish (y is fixed). */
   points: [number, number][];
+  /** Fixed shoreline control points [x, z] (land/sea boundary). */
+  coast: [number, number][];
+  /**
+   * World-X direction the open sea lies, relative to the coastline:
+   * -1 = sea toward −X (to the car's right when driving +Z),
+   * +1 = sea toward +X (to the car's left). Flip if a location's sea
+   * ends up on the wrong side.
+   */
+  seaXdir: number;
 }
 
-/**
- * Distance the whole coastal road is stretched along Z. The base control-point
- * tables below were authored across z ∈ [-250, 250]; this scale lengthens the
- * drive (the curve gets correspondingly longer) without re-authoring points.
- * Keep terrain depth / shadow-camera / ocean coverage in sync with TRACK_HALF_Z.
- */
-export const TRACK_LENGTH_SCALE = 1.85;
-/** Half the Z-extent of a road after scaling (≈ base 250 × scale). */
-export const TRACK_HALF_Z = 250 * TRACK_LENGTH_SCALE;
+/** Half the Z-extent of every location (road + coastline run along Z). */
+export const TRACK_HALF_Z = 460;
 
-const BASE_TRACKS: Track[] = [
-  { id: "acapulco", name: "Acapulco · Zona Diamante", points: [[-10, -250], [-33, -221], [-52, -191], [-65, -162], [-70, -132], [-66, -103], [-54, -74], [-35, -44], [-12, -15], [12, 15], [35, 44], [54, 74], [66, 103], [70, 132], [65, 162], [52, 191], [33, 221], [10, 250]] },
-  { id: "cancun", name: "Cancún · Costera", points: [[-26, -250], [-25, -221], [-24, -191], [-20, -162], [-16, -132], [-11, -103], [-5, -74], [1, -44], [7, -15], [13, 15], [18, 44], [22, 74], [24, 103], [26, 132], [26, 162], [24, 191], [22, 221], [18, 250]] },
-  { id: "los_cabos", name: "Los Cabos · Corredor", points: [[-13, -250], [-53, -221], [-81, -191], [-92, -162], [-83, -132], [-55, -103], [-16, -74], [27, -44], [64, -15], [87, 15], [91, 44], [76, 74], [44, 103], [2, 132], [-40, 162], [-73, 191], [-90, 221], [-88, 250]] },
-  { id: "tulum", name: "Tulum · Riviera Maya", points: [[-31, -250], [-38, -221], [-42, -191], [-42, -162], [-38, -132], [-31, -103], [-21, -74], [-10, -44], [2, -15], [14, 15], [25, 44], [34, 74], [40, 103], [42, 132], [41, 162], [36, 191], [28, 221], [18, 250]] },
-  { id: "niza", name: "Niza · Promenade", points: [[-29, -250], [-48, -221], [-59, -191], [-62, -162], [-56, -132], [-42, -103], [-22, -74], [2, -44], [25, -15], [44, 15], [57, 44], [62, 74], [58, 103], [45, 132], [26, 162], [3, 191], [-20, 221], [-40, 250]] },
-  { id: "monaco", name: "Mónaco · Costa", points: [[59, -250], [83, -221], [73, -191], [34, -162], [-19, -132], [-65, -103], [-84, -74], [-69, -44], [-27, -15], [27, 15], [69, 44], [84, 74], [65, 103], [19, 132], [-34, 162], [-73, 191], [-83, 221], [-59, 250]] },
-  { id: "costa_azul", name: "Costa Azul · Corniche", points: [[51, -250], [3, -221], [-46, -191], [-82, -162], [-96, -132], [-83, -103], [-48, -74], [1, -44], [49, -15], [84, 15], [96, 44], [82, 74], [45, 103], [-4, 132], [-52, 162], [-86, 191], [-96, 221], [-80, 250]] },
-  { id: "positano", name: "Positano · Amalfitana", points: [[-45, -250], [44, -221], [104, -191], [97, -162], [29, -132], [-58, -103], [-108, -74], [-89, -44], [-12, -15], [72, 15], [110, 44], [78, 74], [-4, 103], [-84, 132], [-109, 162], [-65, 191], [21, 221], [94, 250]] },
-  { id: "amalfi", name: "Amalfi · Costiera", points: [[55, -250], [6, -221], [-45, -191], [-80, -162], [-89, -132], [-68, -103], [-24, -74], [28, -44], [71, -15], [90, 15], [78, 44], [41, 74], [-11, 103], [-58, 132], [-87, 162], [-86, 191], [-56, 221], [-7, 250]] },
-  { id: "portofino", name: "Portofino · Litoral", points: [[51, -250], [72, -221], [58, -191], [17, -162], [-32, -132], [-66, -103], [-69, -74], [-38, -44], [11, -15], [54, 15], [72, 44], [55, 74], [12, 103], [-37, 132], [-68, 162], [-67, 191], [-34, 221], [15, 250]] },
+interface CoastSpec {
+  id: string;
+  name: string;
+  /** Which side of the car the sea is on while driving start→finish (+Z). */
+  sea: "right" | "left";
+  /** Base world-X of the shoreline. */
+  coastBaseX: number;
+  /** Shoreline wave amplitude + frequency + phase (gives the coast character). */
+  coastAmp: number;
+  coastFreq: number;
+  coastPhase: number;
+  /** Linear X drift of the coast start→finish (overall bend of the coastline). */
+  drift: number;
+  /** Base distance the road sits inland from the shore. */
+  inland: number;
+  /** Small independent road wander so it isn't a perfect offset of the coast. */
+  roadWiggle: number;
+  /** Inland excursions (city blocks): a Gaussian bump pulling the road inland. */
+  detours: { z: number; w: number; depth: number }[];
+}
+
+// Per-destination character. Acapulco: sea on the right, a long coastal sweep
+// bending left, with a city detour through the Zona Diamante. Mónaco: mirrored —
+// sea on the left, the principality (city) on the right, tight and wavy.
+const SPECS: CoastSpec[] = [
+  { id: "acapulco", name: "Acapulco · Zona Diamante", sea: "right", coastBaseX: -40, coastAmp: 24, coastFreq: 0.0085, coastPhase: 0.4, drift: 70, inland: 16, roadWiggle: 7, detours: [{ z: 40, w: 95, depth: 64 }] },
+  { id: "cancun", name: "Cancún · Costera", sea: "right", coastBaseX: -30, coastAmp: 12, coastFreq: 0.006, coastPhase: 0, drift: 30, inland: 14, roadWiggle: 4, detours: [{ z: -120, w: 80, depth: 40 }] },
+  { id: "los_cabos", name: "Los Cabos · Corredor", sea: "right", coastBaseX: -55, coastAmp: 46, coastFreq: 0.011, coastPhase: 1.1, drift: -40, inland: 18, roadWiggle: 9, detours: [] },
+  { id: "tulum", name: "Tulum · Riviera Maya", sea: "right", coastBaseX: -34, coastAmp: 20, coastFreq: 0.009, coastPhase: 0.6, drift: 24, inland: 13, roadWiggle: 5, detours: [{ z: 110, w: 70, depth: 34 }] },
+  { id: "niza", name: "Niza · Promenade", sea: "right", coastBaseX: -38, coastAmp: 30, coastFreq: 0.012, coastPhase: 0.2, drift: 48, inland: 17, roadWiggle: 6, detours: [{ z: -40, w: 85, depth: 50 }] },
+  { id: "monaco", name: "Mónaco · Costa", sea: "left", coastBaseX: 46, coastAmp: 34, coastFreq: 0.016, coastPhase: 0.9, drift: -30, inland: 16, roadWiggle: 8, detours: [{ z: 20, w: 75, depth: 56 }] },
+  { id: "costa_azul", name: "Costa Azul · Corniche", sea: "left", coastBaseX: 52, coastAmp: 40, coastFreq: 0.013, coastPhase: 0.3, drift: -50, inland: 19, roadWiggle: 9, detours: [] },
+  { id: "positano", name: "Positano · Amalfitana", sea: "left", coastBaseX: 50, coastAmp: 52, coastFreq: 0.017, coastPhase: 1.4, drift: 36, inland: 18, roadWiggle: 11, detours: [{ z: -60, w: 70, depth: 48 }] },
+  { id: "amalfi", name: "Amalfi · Costiera", sea: "left", coastBaseX: 48, coastAmp: 44, coastFreq: 0.015, coastPhase: 0.7, drift: -36, inland: 17, roadWiggle: 10, detours: [{ z: 80, w: 72, depth: 44 }] },
+  { id: "portofino", name: "Portofino · Litoral", sea: "left", coastBaseX: 44, coastAmp: 30, coastFreq: 0.018, coastPhase: 0.1, drift: 28, inland: 15, roadWiggle: 7, detours: [{ z: -20, w: 65, depth: 40 }] },
 ];
 
-/**
- * Stretch the authored roads along Z so each drive is meaningfully longer.
- * X is scaled a touch too (so curves keep their proportions instead of looking
- * pinched), but less than Z so the road still runs mostly seaward-parallel.
- */
-export const TRACKS: Track[] = BASE_TRACKS.map((t) => ({
-  ...t,
-  points: t.points.map(([x, z]) => [
-    Math.round(x * 1.25 * 100) / 100,
-    Math.round(z * TRACK_LENGTH_SCALE * 100) / 100,
-  ]) as [number, number][],
-}));
+const N_ROAD = 30;
+const N_COAST = 22;
+const r2 = (v: number) => Math.round(v * 100) / 100;
+
+function coastXAt(s: CoastSpec, z: number): number {
+  return (
+    s.coastBaseX +
+    s.coastAmp * Math.sin(z * s.coastFreq + s.coastPhase) +
+    s.drift * (z / TRACK_HALF_Z)
+  );
+}
+
+function roadInlandAt(s: CoastSpec, z: number): number {
+  let d = s.inland + s.roadWiggle * Math.sin(z * 0.012 + 1.7);
+  for (const dt of s.detours) {
+    const u = (z - dt.z) / dt.w;
+    d += dt.depth * Math.exp(-u * u);
+  }
+  return d;
+}
+
+function buildTrack(s: CoastSpec): Track {
+  const seaXdir = s.sea === "right" ? -1 : 1;
+  const landDir = -seaXdir; // road sits on the land side of the coast
+
+  const coast: [number, number][] = [];
+  for (let i = 0; i < N_COAST; i++) {
+    const z = -TRACK_HALF_Z + (2 * TRACK_HALF_Z * i) / (N_COAST - 1);
+    coast.push([r2(coastXAt(s, z)), r2(z)]);
+  }
+
+  const points: [number, number][] = [];
+  for (let i = 0; i < N_ROAD; i++) {
+    const z = -TRACK_HALF_Z + (2 * TRACK_HALF_Z * i) / (N_ROAD - 1);
+    const x = coastXAt(s, z) + landDir * roadInlandAt(s, z);
+    points.push([r2(x), r2(z)]);
+  }
+
+  return { id: s.id, name: s.name, points, coast, seaXdir };
+}
+
+export const TRACKS: Track[] = SPECS.map(buildTrack);
 
 export const DEFAULT_TRACK = TRACKS[0]!;
 

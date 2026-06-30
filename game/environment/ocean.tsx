@@ -7,18 +7,22 @@ import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { createOceanMaterial } from "@/game/procedural/materials/ocean";
 import { useSceneStore } from "@/stores/scene-store";
 
-/** Per-destination water tint so each location reads differently up close. */
+/**
+ * Per-destination water tint so each location reads differently up close.
+ * Tuned toward bright, paradisiacal turquoise for the tropical spots and deep
+ * Mediterranean azure for the European ones.
+ */
 const WATER_BY_ID: Record<string, string> = {
-  acapulco: "#2a7a86",
-  cancun: "#15a8bf",
-  los_cabos: "#1c5f86",
-  tulum: "#16a89e",
-  niza: "#1f6f9e",
-  monaco: "#1a5e8e",
-  costa_azul: "#1f86ac",
-  positano: "#1c5a7a",
-  amalfi: "#1a8aa4",
-  portofino: "#1f6f9e",
+  acapulco: "#1ba6b0",
+  cancun: "#19c5d6",
+  los_cabos: "#1d86b8",
+  tulum: "#1ec7b4",
+  niza: "#1f8fc4",
+  monaco: "#1c7fbe",
+  costa_azul: "#22a0cc",
+  positano: "#1c84b6",
+  amalfi: "#1aa6c4",
+  portofino: "#1f8fc4",
 };
 
 const _color = new Color();

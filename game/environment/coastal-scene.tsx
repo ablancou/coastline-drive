@@ -22,7 +22,7 @@ export function CoastalScene() {
 
   const roadGeometry = useMemo(() => createRoadGeometry(), []);
   const terrainGeometry = useMemo(
-    () => createTerrainGeometry(360, 1040, 200, biome),
+    () => createTerrainGeometry(480, 1040, 220, biome),
     [biome],
   );
   const asphaltTexture = useMemo(() => {
