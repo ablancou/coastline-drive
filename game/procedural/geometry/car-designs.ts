@@ -169,6 +169,9 @@ export function createCarBody(
   }
 
   group.userData.paintMaterial = paint;
+  // Runtime hooks: brake lights flare on brake, headlights dip/rise with night.
+  group.userData.taillightMaterial = taillight;
+  group.userData.headlightMaterial = headlight;
 
   return group;
 }

@@ -20,8 +20,9 @@ export function ChaseCamera() {
   const { camera } = useThree();
   const lookPoint = useRef(new Vector3());
   const snapped = useRef(false);
+  const roll = useRef(0);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!vehicleTarget.active) return;
 
     const cfg = CHASE_CAMERA;
@@ -59,7 +60,20 @@ export function ChaseCamera() {
       vehicleTarget.shake = 0;
     }
 
+    // High-speed micro-bob — a faint vertical shimmer that sells velocity.
+    const speedNorm = Math.min(speed / 45, 1);
+    if (speedNorm > 0.35) {
+      const t = state.clock.elapsedTime;
+      camera.position.y +=
+        Math.sin(t * 11.3) * 0.012 * speedNorm + Math.sin(t * 17.7) * 0.006 * speedNorm;
+    }
+
     camera.lookAt(lookPoint.current);
+
+    // Lean the horizon slightly into a drift (slip angle), like a chase heli.
+    const rollTarget = Math.max(-0.045, Math.min(0.045, -vehicleTarget.slip * 0.35));
+    roll.current += (rollTarget - roll.current) * (1 - Math.exp(-5 * delta));
+    if (Math.abs(roll.current) > 0.0004) camera.rotateZ(roll.current);
 
     // Speed sense — widen FOV slightly as speed rises.
     if (camera instanceof PerspectiveCamera) {

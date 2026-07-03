@@ -27,7 +27,7 @@ import { clamp, finiteOr, wrapAngle } from "@/lib/math";
 import { useCustomizationStore } from "@/stores/customization-store";
 import { useRaceStore } from "@/stores/race-store";
 import { useTelemetryStore } from "@/stores/telemetry-store";
-import type { MeshPhysicalMaterial } from "three";
+import type { MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 import type { InputState } from "@/types/input";
 import type { VehicleSimState } from "@/types/vehicle";
 
@@ -155,7 +155,7 @@ export function VehicleController() {
     stepVehicle(chassis, simRef.current, inputRef.current, restHeight, spawnPose.rotationY);
   });
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const chassis = chassisRef.current;
     if (!chassis) return;
 
@@ -164,6 +164,15 @@ export function VehicleController() {
 
     // Visual weight transfer — chassis mesh leans/pitches in the car's local frame.
     bodyGroup.rotation.set(sim.bodyPitch, 0, sim.bodyRoll);
+
+    // Brake lights flare while braking (render-only material tweak).
+    const tail = bodyGroup.userData.taillightMaterial as MeshStandardMaterial | undefined;
+    if (tail) {
+      const braking = inputRef.current.brake > 0.05 || inputRef.current.handbrake;
+      const target = braking ? 6.5 : 1.4;
+      tail.emissiveIntensity +=
+        (target - tail.emissiveIntensity) * Math.min(1, 18 * delta);
+    }
 
     _vel.set(
       Math.sin(sim.velAngle) * sim.speedMs,

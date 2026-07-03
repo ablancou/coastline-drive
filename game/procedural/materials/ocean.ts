@@ -28,9 +28,11 @@ export function createOceanMaterial(): MeshStandardMaterial {
       float _x = position.x;
       float _y = position.y;
       float dwdx = cos(_x * 0.18 + uTime * 1.1) * 0.12 * 0.18
-                 + cos((_x + _y) * 0.07 + uTime * 0.6) * 0.08 * 0.07;
+                 + cos((_x + _y) * 0.07 + uTime * 0.6) * 0.08 * 0.07
+                 + cos((_x + _y) * 0.02 + uTime * 0.35) * 0.18 * 0.02;
       float dwdy = cos(_y * 0.13 - uTime * 0.9) * 0.10 * 0.13
-                 + cos((_x + _y) * 0.07 + uTime * 0.6) * 0.08 * 0.07;
+                 + cos((_x + _y) * 0.07 + uTime * 0.6) * 0.08 * 0.07
+                 + cos((_x + _y) * 0.02 + uTime * 0.35) * 0.18 * 0.02;
       vec3 objectNormal = normalize(vec3(-dwdx, -dwdy, 1.0));
       #ifdef USE_TANGENT
         vec3 objectTangent = vec3( tangent.xyz );
@@ -43,7 +45,8 @@ export function createOceanMaterial(): MeshStandardMaterial {
       `
       float w = sin(position.x * 0.18 + uTime * 1.1) * 0.12
               + sin(position.y * 0.13 - uTime * 0.9) * 0.10
-              + sin((position.x + position.y) * 0.07 + uTime * 0.6) * 0.08;
+              + sin((position.x + position.y) * 0.07 + uTime * 0.6) * 0.08
+              + sin((position.x + position.y) * 0.02 + uTime * 0.35) * 0.18;
       vec3 transformed = vec3( position.x, position.y, position.z + w );
       `,
     );

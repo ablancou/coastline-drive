@@ -16,8 +16,8 @@ export function PostFx() {
     <EffectComposer multisampling={0}>
       <Bloom
         mipmapBlur
-        intensity={0.85}
-        luminanceThreshold={0.85}
+        intensity={0.95}
+        luminanceThreshold={0.8}
         luminanceSmoothing={0.25}
       />
       <Vignette offset={0.22} darkness={0.72} eskil={false} />
