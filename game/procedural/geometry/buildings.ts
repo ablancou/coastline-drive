@@ -27,23 +27,31 @@ const windowMat = new MeshStandardMaterial({
   roughness: 0.3,
 });
 
-/** A coastal city / marina skyline clustered along part of the inland side. */
-export function buildBuildings(count = 18): Object3D {
+/**
+ * A coastal city skyline on the inland side: a dense front row of mid-rise
+ * hotels near the road plus a taller second row behind them, so the district
+ * reads as a real resort strip (hotels first, hill rising behind).
+ */
+export function buildBuildings(count = 34): Object3D {
   const root = new Group();
   const sign = getRoadInteriorSign();
   const frame = { point: new Vector3(), tangent: new Vector3(), side: new Vector3() };
 
   for (let i = 0; i < count; i++) {
-    const t = 0.06 + hash01(i, 1.1) * 0.36; // a district, not the whole loop
+    const backRow = i >= count * 0.55; // taller towers behind the front strip
+    const t = 0.05 + hash01(i, 1.1) * 0.5; // a long resort district
     sampleRoadFrame(t, frame);
-    const lateral = sign * (ROAD_WIDTH * 0.5 + 20 + hash01(i, 2.2) * 48);
+    const inland = backRow
+      ? 52 + hash01(i, 2.2) * 42
+      : 18 + hash01(i, 2.2) * 26;
+    const lateral = sign * (ROAD_WIDTH * 0.5 + inland);
     const x = frame.point.x + frame.side.x * lateral;
     const z = frame.point.z + frame.side.z * lateral;
     const y = cliffHeightAt(x, z);
 
-    const w = 4 + hash01(i, 3.3) * 6;
-    const d = 4 + hash01(i, 4.4) * 6;
-    const h = 7 + hash01(i, 5.5) * 28;
+    const w = 4 + hash01(i, 3.3) * (backRow ? 8 : 6);
+    const d = 4 + hash01(i, 4.4) * (backRow ? 8 : 6);
+    const h = backRow ? 18 + hash01(i, 5.5) * 42 : 7 + hash01(i, 5.5) * 22;
 
     const b = new Group();
     const body = new Mesh(

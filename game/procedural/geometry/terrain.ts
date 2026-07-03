@@ -37,9 +37,12 @@ function fractalNoise(x: number, z: number): number {
 export function naturalCoastHeight(sd: number, x: number, z: number): number {
   if (sd <= 0) return WATER_BASE + sd * 0.3; // seaward: descend under the water
   const cliffMask = Math.min(1, Math.max(0, (sd - 60) / 55));
-  const cliff = cliffMask * cliffMask * 16;
-  const noise = fractalNoise(x, z) * (1.1 + cliffMask * 3.5);
-  return WATER_BASE + sd * 0.045 + cliff + noise;
+  const cliff = cliffMask * cliffMask * 20;
+  // Distant backdrop ridge — the "cerro" rising behind the hotel skyline.
+  const ridgeMask = Math.min(1, Math.max(0, (sd - 115) / 85));
+  const ridge = ridgeMask * ridgeMask * 26;
+  const noise = fractalNoise(x, z) * (1.1 + cliffMask * 3.5 + ridgeMask * 2.5);
+  return WATER_BASE + sd * 0.045 + cliff + ridge + noise;
 }
 
 /**

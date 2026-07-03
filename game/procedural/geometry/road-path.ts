@@ -2,7 +2,7 @@ import { CatmullRomCurve3, Vector3 } from "three";
 import { DEFAULT_TRACK, type Track } from "@/game/constants/tracks";
 
 export const ROAD_WIDTH = 12;
-export const ROAD_SEGMENTS = 420;
+export const ROAD_SEGMENTS = 560;
 /** Road surface height (all track points sit at this y). */
 export const ROAD_SURFACE_Y = 0.02;
 /** Guardrails live on the exterior (ocean) edge of the loop. */
@@ -63,8 +63,8 @@ export function signedDistanceToCoast(x: number, z: number): number {
   const curve = getCoastCurve();
   let bestT = 0;
   let bestDist = Infinity;
-  for (let i = 0; i < 260; i++) {
-    const t = i / 260;
+  for (let i = 0; i < 340; i++) {
+    const t = i / 340;
     curve.getPoint(t, _coastPoint);
     const dx = _coastPoint.x - x;
     const dz = _coastPoint.z - z;
@@ -114,8 +114,8 @@ export function getRoadSurfaceAt(x: number, z: number, out: RoadSurfaceSample): 
 
   // 480 samples keep the nearest-point search accurate on the larger circuit
   // (used by the kinematic vehicle's lateral clamp and terrain shaping).
-  for (let i = 0; i < 480; i++) {
-    const t = i / 480;
+  for (let i = 0; i < 640; i++) {
+    const t = i / 640;
     curve.getPoint(t, _point);
     const dx = _point.x - x;
     const dz = _point.z - z;
@@ -150,8 +150,8 @@ export function getRoadProgress(x: number, z: number): number {
   const curve = getRoadCurve();
   let bestT = 0;
   let bestDist = Infinity;
-  for (let i = 0; i < 480; i++) {
-    const t = i / 480;
+  for (let i = 0; i < 640; i++) {
+    const t = i / 640;
     curve.getPoint(t, _point);
     const dx = _point.x - x;
     const dz = _point.z - z;

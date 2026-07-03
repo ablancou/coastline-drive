@@ -94,7 +94,7 @@ function GlobeScene() {
                   />
                 </mesh>
                 {(active || hover === pin.i) && (
-                  <Html center distanceFactor={6} style={{ pointerEvents: "none" }}>
+                  <Html center style={{ pointerEvents: "none" }}>
                     <div className="globe-label">{pin.label}</div>
                   </Html>
                 )}

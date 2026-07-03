@@ -24,7 +24,7 @@ export interface Track {
 }
 
 /** Half the Z-extent of every location (road + coastline run along Z). */
-export const TRACK_HALF_Z = 460;
+export const TRACK_HALF_Z = 650;
 
 interface CoastSpec {
   id: string;

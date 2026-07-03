@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   CylinderGeometry,
   Mesh,
@@ -36,6 +36,8 @@ interface Rival {
   lane: number;
   prevYaw: number;
   roll: number;
+  /** Launch ramp 0→1 — rivals accelerate off the line like the player does. */
+  ramp: number;
 }
 
 export function Rivals() {
@@ -73,12 +75,14 @@ export function Rivals() {
         group: car,
         body,
         wheels,
-        t: 0.01 + i * 0.012,
+        t: 0.008 + i * 0.006,
         laps: 0,
-        speed: 0.027 + (i % 3) * 0.007, // paced for the longer road (~25-37s)
+        // Paced for the long coastal road; rubber-banding keeps the pack close.
+        speed: 0.016 + (i % 3) * 0.004,
         lane: (i % 2 === 0 ? -1 : 1) * (ROAD_WIDTH * 0.16),
         prevYaw: 0,
         roll: 0,
+        ramp: 0,
       });
       rivalPositions[i] = { x: 0, z: 0 };
     }
@@ -89,6 +93,17 @@ export function Rivals() {
   // Road length (m) → converts t-speed to linear speed for wheel spin.
   const roadLength = useMemo(() => getRoadCurve().getLength(), []);
 
+  // Fresh run (REINICIAR / mode change): rivals return to the grid.
+  const runId = useRaceStore((s) => s.runId);
+  useEffect(() => {
+    rivalsRef.current.forEach((r, i) => {
+      r.t = 0.008 + i * 0.006;
+      r.ramp = 0;
+      r.roll = 0;
+      r.prevYaw = 0;
+    });
+  }, [runId]);
+
   useFrame((state, dt) => {
     const race = useRaceStore.getState();
     if (race.timeTrial) {
@@ -98,9 +113,22 @@ export function Rivals() {
     const live = race.started && !race.paused && !race.finished;
 
     const elapsed = state.clock.elapsedTime;
+    const playerProgress = vehicleTarget.active
+      ? getRoadProgress(vehicleTarget.position.x, vehicleTarget.position.z)
+      : 0;
+
     rivalsRef.current.forEach((r, i) => {
       if (live) {
-        r.t = Math.min(1, r.t + r.speed * dt); // drive to the finish, then stop
+        // Launch ramp: rivals accelerate off the line over ~5s (fair start).
+        r.ramp = Math.min(1, r.ramp + dt / 5);
+        const launch = r.ramp * r.ramp * (3 - 2 * r.ramp); // smoothstep
+
+        // Rubber-banding: leaders ease off, stragglers push — the pack stays
+        // close enough to fight without ever being unbeatable.
+        const gap = r.t - playerProgress;
+        const band = Math.min(1.16, Math.max(0.7, 1 - gap * 2.4));
+
+        r.t = Math.min(1, r.t + r.speed * launch * band * dt);
       }
       sampleRoadFrame(r.t, frame);
       const x = frame.point.x + frame.side.x * r.lane;
@@ -136,7 +164,6 @@ export function Rivals() {
     });
 
     if (vehicleTarget.active) {
-      const playerProgress = getRoadProgress(vehicleTarget.position.x, vehicleTarget.position.z);
       let ahead = 0;
       for (const r of rivalsRef.current) {
         if (r.t > playerProgress) ahead++;

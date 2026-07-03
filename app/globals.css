@@ -382,6 +382,7 @@ body {
 
 .custom__swatches {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
@@ -583,30 +584,38 @@ body {
 
 /* ---- Garage configurator panel ---- */
 .garage__panel {
-  width: min(94vw, 56rem);
-  max-height: 84vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  padding: 1.4rem 1.6rem 1.8rem;
-  background: rgba(10, 15, 22, 0.72);
-  border: 1px solid rgba(200, 212, 224, 0.14);
-  border-radius: 14px;
-  backdrop-filter: blur(10px);
+  width: min(96vw, 68rem);
+  max-height: 88vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
+  padding: 1.3rem 1.6rem 1.4rem;
+  background: linear-gradient(
+    165deg,
+    rgba(14, 21, 32, 0.86) 0%,
+    rgba(8, 12, 19, 0.9) 100%
+  );
+  border: 1px solid rgba(159, 196, 255, 0.16);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .garage__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid rgba(159, 196, 255, 0.1);
 }
 
 .garage__title {
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.4em;
-  color: #c8d4e0;
+  color: #e8eef6;
 }
 
 .garage__back {
@@ -616,12 +625,59 @@ body {
   cursor: pointer;
   font-size: 0.72rem;
   letter-spacing: 0.15em;
+  padding: 0.35rem 0.55rem;
+  border-radius: 7px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
+.garage__back:hover {
+  background: rgba(159, 196, 255, 0.1);
+  color: #cfe0ff;
+}
+
+/* Two balanced columns on wide screens; single scrollable column otherwise. */
 .garage__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.4rem;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 0.35rem;
+}
+
+@media (min-width: 1024px) {
+  .garage__body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 2.2rem;
+  }
+}
+
+.garage__col {
   display: flex;
   flex-direction: column;
-  gap: 1.3rem;
+  gap: 1.15rem;
+  min-width: 0;
+}
+
+.garage__col--dest {
+  border-top: 1px solid rgba(159, 196, 255, 0.1);
+  padding-top: 1.1rem;
+}
+
+@media (min-width: 1024px) {
+  .garage__col--dest {
+    border-top: none;
+    padding-top: 0;
+    border-left: 1px solid rgba(159, 196, 255, 0.1);
+    padding-left: 2.2rem;
+  }
+}
+
+/* MODO + HORA side by side — they're small toggles. */
+.garage__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.15rem 2.4rem;
 }
 
 .garage__section {
@@ -674,28 +730,32 @@ body {
 }
 
 .garage__drive {
-  align-self: center;
-  margin-top: 0.3rem;
+  width: 100%;
+  margin-top: 0.15rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.3em;
+  border-radius: 12px;
 }
 
 /* ---- Destination globe (Garage) ---- */
 .garage__section--center {
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
 }
 
 .dest-layout {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 1.2rem;
   width: 100%;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 }
 
 .globe-wrap {
-  width: 360px;
-  height: 360px;
+  width: 240px;
+  height: 240px;
   max-width: 100%;
   flex: 0 0 auto;
   cursor: grab;
@@ -706,9 +766,9 @@ body {
 }
 
 .dest-list {
-  flex: 1 1 14rem;
-  min-width: 13rem;
-  max-height: 360px;
+  flex: 1 1 13rem;
+  min-width: 12rem;
+  max-height: 330px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -765,9 +825,56 @@ body {
   color: #9fc4ff;
 }
 
-@media (max-height: 560px) {
+/* Mobile portrait — tighter panel, smaller globe. */
+@media (max-width: 479px) {
+  .garage {
+    padding: 0.8rem;
+  }
+  .garage__panel {
+    width: 100%;
+    max-height: 92vh;
+    padding: 1rem 0.9rem 1rem;
+    border-radius: 14px;
+  }
   .globe-wrap {
-    height: 220px;
+    width: 180px;
+    height: 180px;
+  }
+  .dest-list {
+    max-height: 240px;
+  }
+  .garage__row {
+    gap: 0.9rem 1.4rem;
+  }
+}
+
+/* Mobile landscape — short viewport: shrink chrome, keep CTA visible. */
+@media (max-height: 560px) {
+  .garage__panel {
+    max-height: 96vh;
+    gap: 0.6rem;
+    padding: 0.8rem 1rem 0.8rem;
+  }
+  .garage__header {
+    padding-bottom: 0.5rem;
+  }
+  .globe-wrap {
+    width: 150px;
+    height: 150px;
+  }
+  .dest-list {
+    max-height: 200px;
+  }
+  .garage__drive {
+    padding: 0.55rem 1rem;
+    font-size: 0.82rem;
+  }
+}
+
+/* Very short landscape: the globe costs too much height — list-only. */
+@media (max-height: 430px) {
+  .globe-wrap {
+    display: none;
   }
 }
 

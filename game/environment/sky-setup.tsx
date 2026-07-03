@@ -5,6 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { type DirectionalLight, Fog, type HemisphereLight } from "three";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
+import { getActiveTrack } from "@/game/procedural/geometry/road-path";
 import { computeSky, makeSkyState, timeOfDay } from "@/game/systems/time-of-day";
 import { useSceneStore } from "@/stores/scene-store";
 
@@ -46,7 +47,10 @@ export function SkySetup() {
       // out past a fixed box at the world origin.
       const fx = camera.position.x;
       const fz = camera.position.z;
-      s.position.set(fx + sky.sunX, sky.sunY, fz + sky.sunZ);
+      // Hang the sun over the WATER side of this destination — golden glints on
+      // the open sea (e.g. Acapulco: sea + sun on the right of the drive).
+      const seaX = getActiveTrack().seaXdir;
+      s.position.set(fx + Math.abs(sky.sunX) * seaX, sky.sunY, fz + sky.sunZ);
       s.target.position.set(fx, 0, fz);
       s.target.updateMatrixWorld();
     }

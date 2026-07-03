@@ -54,6 +54,7 @@ export function Garage({ onStart, onBack }: GarageProps) {
         </header>
 
         <div className="garage__body">
+          <div className="garage__col">
           <section className="garage__section">
             <span className="custom__label">AUTO</span>
             <div className="car-grid">
@@ -125,6 +126,7 @@ export function Garage({ onStart, onBack }: GarageProps) {
             </div>
           </section>
 
+          <div className="garage__row">
           <section className="garage__section">
             <span className="custom__label">MODO</span>
             <div className="custom__toggle">
@@ -170,7 +172,10 @@ export function Garage({ onStart, onBack }: GarageProps) {
               </button>
             </div>
           </section>
+          </div>
+          </div>
 
+          <div className="garage__col garage__col--dest">
           <section className="garage__section garage__section--center">
             <span className="custom__label">DESTINO · gira el globo o elige de la lista</span>
             <div className="dest-layout">
@@ -199,10 +204,11 @@ export function Garage({ onStart, onBack }: GarageProps) {
               </div>
             </div>
           </section>
+          </div>
         </div>
 
         <button className="start__cta garage__drive" onClick={onStart}>
-          DRIVE
+          CONDUCIR →
         </button>
       </div>
 
