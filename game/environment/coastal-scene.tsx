@@ -13,7 +13,10 @@ import { Guardrails } from "@/game/environment/guardrails";
 import { Ocean } from "@/game/environment/ocean";
 import { Seagulls } from "@/game/environment/seagulls";
 import { ShoreFoam } from "@/game/environment/shore-foam";
-import { createRoadGeometry } from "@/game/procedural/geometry/road";
+import {
+  createRoadGeometry,
+  createRoadMarkingsGeometry,
+} from "@/game/procedural/geometry/road";
 import { createTerrainGeometry } from "@/game/procedural/geometry/terrain";
 import { createAsphaltTexture } from "@/game/procedural/textures/asphalt";
 import { useSceneStore } from "@/stores/scene-store";
@@ -24,6 +27,7 @@ export function CoastalScene() {
   const biome = getBiome(SKY_PRESETS[skyIndex % SKY_PRESETS.length]?.id ?? "");
 
   const roadGeometry = useMemo(() => createRoadGeometry(), []);
+  const markingsGeometry = useMemo(() => createRoadMarkingsGeometry(), []);
   const terrainGeometry = useMemo(
     () => createTerrainGeometry(520, 1460, 200, biome),
     [biome],
@@ -56,9 +60,21 @@ export function CoastalScene() {
     [],
   );
 
+  const markingsMaterial = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: "#eef2f0",
+        emissive: "#20242a",
+        roughness: 0.55,
+        metalness: 0.0,
+      }),
+    [],
+  );
+
   return (
     <group>
       <mesh geometry={roadGeometry} material={roadMaterial} receiveShadow castShadow />
+      <mesh geometry={markingsGeometry} material={markingsMaterial} receiveShadow />
       <mesh geometry={terrainGeometry} material={terrainMaterial} receiveShadow castShadow />
       <Guardrails />
       <CliffRocks />

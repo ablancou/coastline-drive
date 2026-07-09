@@ -69,73 +69,126 @@ body {
   color: #6a8aa8;
 }
 
-.hud__speed {
+/* ---- Circular speed + tach gauge (bottom-right) ---- */
+.gauge {
   position: absolute;
-  bottom: 5rem;
-  left: 2rem;
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-
-.hud__speed-value {
-  font-size: 4rem;
-  font-weight: 200;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.hud__speed-unit {
-  font-size: 0.85rem;
-  letter-spacing: 0.15em;
-  color: #6a8aa8;
-}
-
-.hud__telemetry {
-  position: absolute;
-  top: 1.5rem;
   right: 2rem;
+  bottom: 2.2rem;
+  width: 160px;
+  height: 160px;
+  pointer-events: none;
+}
+
+.gauge__svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gauge__track {
+  fill: none;
+  stroke: rgba(150, 180, 210, 0.16);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.gauge__fill {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke 0.2s ease;
+}
+
+.gauge__redline {
+  fill: none;
+  stroke: rgba(255, 59, 59, 0.55);
+  stroke-width: 6;
+  stroke-linecap: butt;
+}
+
+.gauge__center {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  min-width: 10rem;
-  padding: 0.75rem 1rem;
-  background: rgba(10, 15, 20, 0.55);
-  border: 1px solid rgba(200, 212, 224, 0.12);
-  border-radius: 4px;
-  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
 }
 
-.hud__row {
+.gauge__speed {
+  font-size: 2.9rem;
+  font-weight: 250;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: #f2f7fc;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.gauge__unit {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: #7c98b4;
+}
+
+.gauge__gear {
+  position: absolute;
+  left: 50%;
+  bottom: 1.4rem;
+  transform: translateX(-50%);
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
+  flex-direction: column;
+  align-items: center;
 }
 
-.hud__label {
+.gauge__gear-label {
+  font-size: 0.5rem;
+  letter-spacing: 0.24em;
   color: #6a8aa8;
 }
 
-.hud__value {
+.gauge__gear-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #cfe0f0;
   font-variant-numeric: tabular-nums;
-  color: #e8eef4;
 }
 
 .hud__handbrake {
-  margin-top: 0.25rem;
-  font-size: 0.65rem;
-  letter-spacing: 0.2em;
-  color: #e85d4a;
+  position: absolute;
+  right: 2rem;
+  bottom: 12.8rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #ff6a4a;
+  text-shadow: 0 0 10px rgba(255, 106, 74, 0.6);
   text-align: right;
+  animation: hb-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes hb-pulse {
+  to {
+    opacity: 0.5;
+  }
 }
 
 .hud__controls {
+  position: absolute;
+  bottom: 1.1rem;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.62rem;
   letter-spacing: 0.06em;
   color: rgba(106, 138, 168, 0.7);
   text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .hud__controls {
+    display: none;
+  }
 }
 
 /* ---- Lap timer ---- */
@@ -926,11 +979,11 @@ body {
 /* ---- Minimap ---- */
 .minimap {
   position: absolute;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  top: 1.5rem;
+  right: 2rem;
   z-index: 20;
-  width: 150px;
-  height: 150px;
+  width: 140px;
+  height: 140px;
   padding: 0.5rem;
   background: rgba(10, 15, 20, 0.5);
   border: 1px solid rgba(200, 212, 224, 0.14);
@@ -1258,18 +1311,6 @@ body {
   .hud__controls {
     display: none;
   }
-  .hud__telemetry {
-    display: none;
-  }
-  .hud__speed {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    bottom: 1.6rem;
-  }
-  .hud__speed-value {
-    font-size: 2.6rem;
-  }
   .minimap {
     top: 1rem;
     right: 1rem;
@@ -1283,6 +1324,14 @@ body {
   .hud {
     padding: 1rem;
   }
+  .hud__title {
+    font-size: 0.82rem;
+    letter-spacing: 0.22em;
+  }
+  .hud__subtitle {
+    font-size: 0.55rem;
+    letter-spacing: 0.35em;
+  }
   .lap {
     top: 3.4rem;
     left: 1rem;
@@ -1290,8 +1339,54 @@ body {
   .lap__time {
     font-size: 1.4rem;
   }
-  .hud__speed-value {
-    font-size: 2.3rem;
+  .gauge {
+    width: 116px;
+    height: 116px;
+    right: 1rem;
+    bottom: 1.2rem;
+  }
+  .gauge__speed {
+    font-size: 2rem;
+  }
+  .gauge__gear {
+    bottom: 0.7rem;
+  }
+  .gauge__gear-label {
+    display: none;
+  }
+  .hud__nitro {
+    bottom: 8.4rem;
+    right: 1rem;
+    width: 7rem;
+  }
+  .hud__handbrake {
+    bottom: 9.4rem;
+    right: 1rem;
+  }
+}
+
+/* Short landscape: shrink the gauge so it clears the touch pads. */
+@media (max-height: 480px) {
+  .gauge {
+    width: 104px;
+    height: 104px;
+    bottom: 0.7rem;
+    right: 1rem;
+  }
+  .gauge__speed {
+    font-size: 1.7rem;
+  }
+  .gauge__unit {
+    font-size: 0.55rem;
+  }
+  .gauge__gear {
+    bottom: 0.55rem;
+  }
+  .gauge__gear-label {
+    display: none;
+  }
+  .gauge__gear-value {
+    font-size: 0.8rem;
   }
 }
 
@@ -1476,15 +1571,16 @@ body {
   word-break: break-word;
 }
 
-/* ---- Nitro bar ---- */
+/* ---- Nitro bar (sits above the gauge, bottom-right) ---- */
 .hud__nitro {
   position: absolute;
-  bottom: 3.2rem;
-  left: 2rem;
+  bottom: 11.2rem;
+  right: 2rem;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  width: 9rem;
+  width: 10rem;
+  align-items: flex-end;
 }
 
 .hud__nitro-label {
@@ -1494,6 +1590,7 @@ body {
 }
 
 .hud__nitro-bar {
+  width: 100%;
   height: 0.4rem;
   background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
@@ -1502,9 +1599,14 @@ body {
 
 .hud__nitro-fill {
   height: 100%;
-  background: linear-gradient(90deg, #5b9bff, #7cffb2);
+  background: linear-gradient(90deg, #3a6fd0, #5b9bff);
   border-radius: 999px;
-  transition: width 0.15s linear;
+  transition: width 0.15s linear, background 0.3s ease;
+}
+
+.hud__nitro-fill--full {
+  background: linear-gradient(90deg, #5b9bff, #7cffb2);
+  box-shadow: 0 0 8px rgba(124, 255, 178, 0.6);
 }
 
 .touch-btn--boost {
@@ -1519,9 +1621,11 @@ body {
 @media (hover: none) and (pointer: coarse) {
   .hud__nitro {
     left: 50%;
+    right: auto;
     transform: translateX(-50%);
     bottom: 4.6rem;
     width: 8rem;
+    align-items: center;
   }
 }
 
