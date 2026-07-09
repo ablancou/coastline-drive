@@ -8,7 +8,7 @@ import { useLapStore } from "@/stores/lap-store";
 import { useRaceStore } from "@/stores/race-store";
 import { useSceneStore } from "@/stores/scene-store";
 
-const FINISH_T = 0.985;
+export const FINISH_T = 0.985;
 
 /**
  * Sprint timing on the open coastal road: records the A→B time and finishes the

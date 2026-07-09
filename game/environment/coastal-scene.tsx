@@ -8,6 +8,7 @@ import { Boats } from "@/game/environment/boats";
 import { Buildings } from "@/game/environment/buildings";
 import { CliffRocks } from "@/game/environment/cliff-rocks";
 import { CoastalProps } from "@/game/environment/coastal-props";
+import { FinishLine } from "@/game/environment/finish-line";
 import { Foliage } from "@/game/environment/foliage";
 import { Guardrails } from "@/game/environment/guardrails";
 import { Ocean } from "@/game/environment/ocean";
@@ -85,6 +86,7 @@ export function CoastalScene() {
       <ShoreFoam />
       <Boats />
       <Seagulls />
+      <FinishLine />
     </group>
   );
 }

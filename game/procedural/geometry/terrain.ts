@@ -141,9 +141,31 @@ export function createTerrainGeometry(
       b = G[2] + (R[2] - G[2]) * t;
     }
 
-    colors[i * 3] = r;
-    colors[i * 3 + 1] = g;
-    colors[i * 3 + 2] = b;
+    // Break up the flat grass with broad meadow patches + dry/lush variation so
+    // it doesn't read as a single green sheet. Low-frequency so it stays
+    // coherent across the terrain's large triangles.
+    const gw =
+      Math.min(1, (sd - 5) / 16) *
+      (1 - Math.min(1, Math.max(0, (sd - 46) / 40)));
+    if (gw > 0.02) {
+      const patch = fractalNoise(x * 0.13, z * 0.11);
+      const fine = fractalNoise(x * 0.47 + 12, z * 0.5 - 7);
+      const m = (patch * 0.62 + fine * 0.38) * 0.42; // ~ -0.9..0.9
+      r += m * 0.03 * gw;
+      g += m * 0.055 * gw;
+      b += m * 0.018 * gw;
+      // Sun-dried sandy patches where the meadow thins out.
+      if (m < -0.42) {
+        const d = (-m - 0.42) * gw;
+        r += 0.1 * d;
+        g += 0.05 * d;
+        b -= 0.02 * d;
+      }
+    }
+
+    colors[i * 3] = r < 0 ? 0 : r > 1 ? 1 : r;
+    colors[i * 3 + 1] = g < 0 ? 0 : g > 1 ? 1 : g;
+    colors[i * 3 + 2] = b < 0 ? 0 : b > 1 ? 1 : b;
   }
 
   positions.needsUpdate = true;
