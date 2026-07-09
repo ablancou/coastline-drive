@@ -154,6 +154,24 @@ export function createCarBody(
   add(new BoxGeometry(0.02, 0.03, 3.0), chrome, [-0.86, 0.14, -0.1]);
   add(new BoxGeometry(0.02, 0.03, 3.0), chrome, [0.86, 0.14, -0.1]);
 
+  // --- Chrome side mirrors on slim stalks (cowl-mounted) ---
+  const mirrorFace = new MeshStandardMaterial({ color: 0x9fb2c4, metalness: 1, roughness: 0.05, envMapIntensity: 1.8 });
+  for (const s of [-1, 1] as const) {
+    add(new BoxGeometry(0.16, 0.025, 0.025), chrome, [s * 0.95, 0.26, 0.42]);
+    add(unit, chrome, [s * 1.04, 0.29, 0.42], [0.055, 0.07, 0.035]);
+    add(unit, mirrorFace, [s * 1.04, 0.29, 0.455], [0.04, 0.055, 0.01]);
+  }
+
+  // --- Front chrome grille (horizontal slats between the lamps) ---
+  for (let k = 0; k < 3; k++) {
+    add(new BoxGeometry(0.66, 0.02, 0.02), chrome, [0, -0.05 + k * 0.06, 2.13]);
+  }
+  // Nose badge.
+  add(unit, chrome, [0, 0.12, 2.14], [0.05, 0.05, 0.03]);
+
+  // --- Bonnet centre crease (chrome strip) ---
+  add(new BoxGeometry(0.025, 0.02, 1.35), chrome, [0, 0.16, 1.16]);
+
   // --- Driver figures (LHD, seated low) ---
   if (withDriver) {
     const driverMan = createDriverFigure("man");

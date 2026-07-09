@@ -181,6 +181,7 @@ export function VehicleController() {
     );
     updateVehicleTarget(chassis.translation(), chassis.rotation(), _vel);
     vehicleTarget.slip = wrapAngle(sim.heading - sim.velAngle);
+    vehicleTarget.handbrake = inputRef.current.handbrake;
 
     const elapsed = state.clock.elapsedTime;
     if (elapsed - lastTelemetryFlushRef.current >= TELEMETRY_FLUSH_INTERVAL) {

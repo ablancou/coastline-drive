@@ -16,6 +16,7 @@ import { Headlights } from "@/game/systems/headlights";
 import { LapSystem } from "@/game/systems/lap-system";
 import { Rivals } from "@/game/systems/rivals";
 import { TimeOfDaySystem } from "@/game/systems/time-of-day-system";
+import { Traffic } from "@/game/systems/traffic";
 import { VehicleController } from "@/game/vehicles/vehicle-controller";
 import { useSceneStore } from "@/stores/scene-store";
 
@@ -42,6 +43,7 @@ export function GameScene() {
         <ChaseCamera />
         <CoastalScene />
         <Rivals />
+        <Traffic />
         <PhysicsWorld>
           <VehicleController />
         </PhysicsWorld>

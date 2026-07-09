@@ -12,8 +12,8 @@ import {
 } from "three";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 
-const SKID_COUNT = 160;
-const SMOKE_COUNT = 52;
+const SKID_COUNT = 300;
+const SMOKE_COUNT = 110;
 const ROAD_Y = 0.04;
 const FORWARD = new Vector3(0, 0, 1);
 
@@ -49,9 +49,10 @@ export function DriftEffects() {
   const smoke = useMemo(
     () => ({
       pos: new Float32Array(SMOKE_COUNT * 3),
+      vel: new Float32Array(SMOKE_COUNT * 3),
       life: new Float32Array(SMOKE_COUNT).fill(99),
-      maxLife: 0.9,
-      size: 1.4,
+      maxLife: 1.25,
+      size: 2.3,
     }),
     [],
   );
@@ -59,13 +60,13 @@ export function DriftEffects() {
   const dummy = useMemo(() => new Object3D(), []);
   const fwd = useMemo(() => new Vector3(), []);
 
-  const skidGeo = useMemo(() => new PlaneGeometry(0.22, 0.55), []);
+  const skidGeo = useMemo(() => new PlaneGeometry(0.3, 0.6), []);
   const skidMat = useMemo(
     () =>
       new MeshBasicMaterial({
-        color: 0x0a0a0a,
+        color: 0x08080a,
         transparent: true,
-        opacity: 0.4,
+        opacity: 0.55,
         depthWrite: false,
         polygonOffset: true,
         polygonOffsetFactor: -4,
@@ -75,7 +76,14 @@ export function DriftEffects() {
   const smokeTex = useMemo(() => makeSmokeTexture(), []);
   const smokeGeo = useMemo(() => new PlaneGeometry(1, 1), []);
   const smokeMat = useMemo(
-    () => new MeshBasicMaterial({ map: smokeTex, transparent: true, depthWrite: false, opacity: 0.5 }),
+    () =>
+      new MeshBasicMaterial({
+        map: smokeTex,
+        color: 0xd8dde3,
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.62,
+      }),
     [smokeTex],
   );
 
@@ -87,14 +95,26 @@ export function DriftEffects() {
     fwd.copy(FORWARD).applyQuaternion(vehicleTarget.quaternion);
     const yaw = Math.atan2(fwd.x, fwd.z);
     const speed = vehicleTarget.velocity.length();
-    const drifting = vehicleTarget.active && Math.abs(vehicleTarget.slip) > 0.14 && speed > 5;
+    const slip = Math.abs(vehicleTarget.slip);
+    // Drift = sliding sideways, or a handbrake slide, above a walking pace.
+    const drifting =
+      vehicleTarget.active &&
+      speed > 4 &&
+      (slip > 0.12 || (vehicleTarget.handbrake && speed > 6));
+    // More intense slides throw more/bigger smoke.
+    const intensity = Math.min(1, slip * 3 + (vehicleTarget.handbrake ? 0.5 : 0));
 
     const px = vehicleTarget.position.x;
     const pz = vehicleTarget.position.z;
     const cos = Math.cos(yaw);
     const sin = Math.sin(yaw);
+    // Lateral (sideways) world direction — smoke billows out of the slide.
+    const latX = cos;
+    const latZ = -sin;
+    const slideSign = vehicleTarget.slip >= 0 ? 1 : -1;
 
     if (drifting) {
+      const puffs = 1 + Math.round(intensity * 2); // 1–3 puffs per wheel per frame
       for (const [lx, lz] of REAR) {
         // Rotate local offset by yaw → world.
         const wx = px + (lx * cos + lz * sin);
@@ -108,25 +128,39 @@ export function DriftEffects() {
         skid.setMatrixAt(skidIdx.current, dummy.matrix);
         skidIdx.current = (skidIdx.current + 1) % SKID_COUNT;
 
-        // Spawn a smoke puff.
-        const si = smokeIdx.current;
-        smoke.pos[si * 3] = wx;
-        smoke.pos[si * 3 + 1] = ROAD_Y + 0.2;
-        smoke.pos[si * 3 + 2] = wz;
-        smoke.life[si] = 0;
-        smokeIdx.current = (smokeIdx.current + 1) % SMOKE_COUNT;
+        // Spawn smoke puffs with sideways + upward drift.
+        for (let p = 0; p < puffs; p++) {
+          const si = smokeIdx.current;
+          const jx = (p - puffs / 2) * 0.18;
+          smoke.pos[si * 3] = wx + latX * jx;
+          smoke.pos[si * 3 + 1] = ROAD_Y + 0.2;
+          smoke.pos[si * 3 + 2] = wz + latZ * jx;
+          smoke.vel[si * 3] = latX * slideSign * (0.8 + intensity * 1.4) - fwd.x * 0.5;
+          smoke.vel[si * 3 + 1] = 0.7 + intensity * 0.6;
+          smoke.vel[si * 3 + 2] = latZ * slideSign * (0.8 + intensity * 1.4) - fwd.z * 0.5;
+          smoke.life[si] = 0;
+          smokeIdx.current = (smokeIdx.current + 1) % SMOKE_COUNT;
+        }
       }
       skid.instanceMatrix.needsUpdate = true;
     }
 
-    // Animate smoke (always — puffs fade out over their life).
+    // Animate smoke (always — puffs drift, rise, expand and fade out).
     for (let i = 0; i < SMOKE_COUNT; i++) {
       const l = smoke.life[i]!;
       if (l < smoke.maxLife) {
         const t = l / smoke.maxLife;
         smoke.life[i] = l + dt;
-        smoke.pos[i * 3 + 1] = (smoke.pos[i * 3 + 1] ?? 0) + dt * 0.7; // rise
-        const s = Math.sin(t * Math.PI) * smoke.size; // grow then shrink → soft fade
+        // Integrate drift velocity; slow it down over time (air drag).
+        const drag = 1 - Math.min(1, dt * 1.6);
+        smoke.pos[i * 3] = (smoke.pos[i * 3] ?? 0) + (smoke.vel[i * 3] ?? 0) * dt;
+        smoke.pos[i * 3 + 1] = (smoke.pos[i * 3 + 1] ?? 0) + (smoke.vel[i * 3 + 1] ?? 0) * dt;
+        smoke.pos[i * 3 + 2] = (smoke.pos[i * 3 + 2] ?? 0) + (smoke.vel[i * 3 + 2] ?? 0) * dt;
+        smoke.vel[i * 3] = (smoke.vel[i * 3] ?? 0) * drag;
+        smoke.vel[i * 3 + 2] = (smoke.vel[i * 3 + 2] ?? 0) * drag;
+        // Grow from small to full, then fade → soft billow.
+        const grow = 0.35 + t * 0.65;
+        const s = Math.sin(t * Math.PI) * smoke.size * grow;
         dummy.position.set(smoke.pos[i * 3]!, smoke.pos[i * 3 + 1]!, smoke.pos[i * 3 + 2]!);
         dummy.quaternion.copy(camera.quaternion); // billboard
         dummy.scale.setScalar(Math.max(0.001, s));

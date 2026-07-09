@@ -10,6 +10,8 @@ export interface VehicleTargetState {
   shake: number;
   /** Slip angle (radians) between heading and travel — drives drift effects. */
   slip: number;
+  /** Handbrake held this frame — drives extra tire smoke. */
+  handbrake: boolean;
 }
 
 export const vehicleTarget: VehicleTargetState = {
@@ -19,6 +21,7 @@ export const vehicleTarget: VehicleTargetState = {
   active: false,
   shake: 0,
   slip: 0,
+  handbrake: false,
 };
 
 export function updateVehicleTarget(
