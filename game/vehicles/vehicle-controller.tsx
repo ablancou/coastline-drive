@@ -29,7 +29,7 @@ import {
 import { playImpact } from "@/game/procedural/audio/engine-audio";
 import { applyRaycastSuspension } from "@/game/physics/suspension-raycast";
 import { createInputSystem } from "@/game/systems/input-system";
-import { rivalPositions } from "@/game/systems/rival-state";
+import { rivalPositions, trafficPositions } from "@/game/systems/rival-state";
 import { updateVehicleTarget, vehicleTarget } from "@/game/systems/vehicle-target";
 import { clamp, finiteOr, wrapAngle } from "@/lib/math";
 import { useCustomizationStore } from "@/stores/customization-store";
@@ -377,22 +377,24 @@ function stepVehicle(
   let nx = pos.x + fwdX * speed * dt;
   let nz = pos.z + fwdZ * speed * dt;
 
-  // Soft collision with rival cars — push out of their radius, scrub speed.
+  // Soft collision with rivals AND ambient traffic — push out, scrub speed.
   const RIVAL_R = 2.7;
-  for (const rp of rivalPositions) {
-    const dx = nx - rp.x;
-    const dz = nz - rp.z;
-    const d2 = dx * dx + dz * dz;
-    if (d2 < RIVAL_R * RIVAL_R && d2 > 1e-3) {
-      const d = Math.sqrt(d2);
-      nx = rp.x + (dx / d) * RIVAL_R;
-      nz = rp.z + (dz / d) * RIVAL_R;
-      speed *= 0.55;
-      sim.speedMs = speed;
-      if (impactCooldown <= 0) {
-        playImpact(0.5);
-        vehicleTarget.shake = Math.max(vehicleTarget.shake, 0.45);
-        impactCooldown = 20;
+  for (const list of [rivalPositions, trafficPositions]) {
+    for (const rp of list) {
+      const dx = nx - rp.x;
+      const dz = nz - rp.z;
+      const d2 = dx * dx + dz * dz;
+      if (d2 < RIVAL_R * RIVAL_R && d2 > 1e-3) {
+        const d = Math.sqrt(d2);
+        nx = rp.x + (dx / d) * RIVAL_R;
+        nz = rp.z + (dz / d) * RIVAL_R;
+        speed *= 0.55;
+        sim.speedMs = speed;
+        if (impactCooldown <= 0) {
+          playImpact(0.5);
+          vehicleTarget.shake = Math.max(vehicleTarget.shake, 0.45);
+          impactCooldown = 20;
+        }
       }
     }
   }
@@ -402,6 +404,9 @@ function stepVehicle(
     (nx - _surface.point.x) * _surface.side.x +
     (nz - _surface.point.z) * _surface.side.z;
   const clampedLateral = clamp(lateral, -cfg.maxLateralOffset, cfg.maxLateralOffset);
+  // Grinding the shoulder → sand dust (decays instantly once back on line).
+  vehicleTarget.edge =
+    clampedLateral !== lateral ? clamp(Math.abs(speed) / 22, 0, 1) : 0;
   if (clampedLateral !== lateral) {
     nx = _surface.point.x + _surface.side.x * clampedLateral;
     nz = _surface.point.z + _surface.side.z * clampedLateral;

@@ -14,6 +14,7 @@ import { vehicleTarget } from "@/game/systems/vehicle-target";
 
 const SKID_COUNT = 300;
 const SMOKE_COUNT = 110;
+const SAND_COUNT = 64;
 const ROAD_Y = 0.04;
 const FORWARD = new Vector3(0, 0, 1);
 
@@ -37,13 +38,15 @@ function makeSmokeTexture(): CanvasTexture {
   return new CanvasTexture(c);
 }
 
-/** Tire smoke + skid marks emitted while drifting. Instanced, allocation-free. */
+/** Tire smoke + skid marks + shoulder sand dust. Instanced, allocation-free. */
 export function DriftEffects() {
   const { camera } = useThree();
   const skidRef = useRef<InstancedMesh>(null);
   const smokeRef = useRef<InstancedMesh>(null);
+  const sandRef = useRef<InstancedMesh>(null);
   const skidIdx = useRef(0);
   const smokeIdx = useRef(0);
+  const sandIdx = useRef(0);
 
   // Per-smoke state (recycled ring buffer).
   const smoke = useMemo(
@@ -53,6 +56,18 @@ export function DriftEffects() {
       life: new Float32Array(SMOKE_COUNT).fill(99),
       maxLife: 1.25,
       size: 2.3,
+    }),
+    [],
+  );
+
+  // Sand dust kicked up while grinding the road shoulder.
+  const sand = useMemo(
+    () => ({
+      pos: new Float32Array(SAND_COUNT * 3),
+      vel: new Float32Array(SAND_COUNT * 3),
+      life: new Float32Array(SAND_COUNT).fill(99),
+      maxLife: 0.7,
+      size: 1.3,
     }),
     [],
   );
@@ -83,6 +98,17 @@ export function DriftEffects() {
         transparent: true,
         depthWrite: false,
         opacity: 0.62,
+      }),
+    [smokeTex],
+  );
+  const sandMat = useMemo(
+    () =>
+      new MeshBasicMaterial({
+        map: smokeTex,
+        color: 0xd9c193,
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.55,
       }),
     [smokeTex],
   );
@@ -145,6 +171,24 @@ export function DriftEffects() {
       skid.instanceMatrix.needsUpdate = true;
     }
 
+    // Sand dust while grinding the shoulder — tan puffs off the rear wheels.
+    const edge = vehicleTarget.edge;
+    if (edge > 0.04) {
+      for (const [lx, lz] of REAR) {
+        const wx = px + (lx * cos + lz * sin);
+        const wz = pz + (-lx * sin + lz * cos);
+        const si = sandIdx.current;
+        sand.pos[si * 3] = wx;
+        sand.pos[si * 3 + 1] = ROAD_Y + 0.12;
+        sand.pos[si * 3 + 2] = wz;
+        sand.vel[si * 3] = (Math.random() - 0.5) * 1.6 - fwd.x * (1.2 + edge);
+        sand.vel[si * 3 + 1] = 0.9 + edge * 1.1;
+        sand.vel[si * 3 + 2] = (Math.random() - 0.5) * 1.6 - fwd.z * (1.2 + edge);
+        sand.life[si] = 0;
+        sandIdx.current = (sandIdx.current + 1) % SAND_COUNT;
+      }
+    }
+
     // Animate smoke (always — puffs drift, rise, expand and fade out).
     for (let i = 0; i < SMOKE_COUNT; i++) {
       const l = smoke.life[i]!;
@@ -174,12 +218,40 @@ export function DriftEffects() {
       }
     }
     smk.instanceMatrix.needsUpdate = true;
+
+    // Animate sand (same integration as smoke, shorter life).
+    const snd = sandRef.current;
+    if (snd) {
+      for (let i = 0; i < SAND_COUNT; i++) {
+        const l = sand.life[i]!;
+        if (l < sand.maxLife) {
+          const t = l / sand.maxLife;
+          sand.life[i] = l + dt;
+          sand.pos[i * 3] = (sand.pos[i * 3] ?? 0) + (sand.vel[i * 3] ?? 0) * dt;
+          sand.pos[i * 3 + 1] = (sand.pos[i * 3 + 1] ?? 0) + (sand.vel[i * 3 + 1] ?? 0) * dt;
+          sand.pos[i * 3 + 2] = (sand.pos[i * 3 + 2] ?? 0) + (sand.vel[i * 3 + 2] ?? 0) * dt;
+          const s = Math.sin(t * Math.PI) * sand.size * (0.4 + t * 0.6);
+          dummy.position.set(sand.pos[i * 3]!, sand.pos[i * 3 + 1]!, sand.pos[i * 3 + 2]!);
+          dummy.quaternion.copy(camera.quaternion);
+          dummy.scale.setScalar(Math.max(0.001, s));
+          dummy.updateMatrix();
+          snd.setMatrixAt(i, dummy.matrix);
+        } else {
+          dummy.scale.setScalar(0.001);
+          dummy.position.set(0, -999, 0);
+          dummy.updateMatrix();
+          snd.setMatrixAt(i, dummy.matrix);
+        }
+      }
+      snd.instanceMatrix.needsUpdate = true;
+    }
   });
 
   return (
     <>
       <instancedMesh ref={skidRef} args={[skidGeo, skidMat, SKID_COUNT]} frustumCulled={false} />
       <instancedMesh ref={smokeRef} args={[smokeGeo, smokeMat, SMOKE_COUNT]} frustumCulled={false} />
+      <instancedMesh ref={sandRef} args={[smokeGeo, sandMat, SAND_COUNT]} frustumCulled={false} />
     </>
   );
 }

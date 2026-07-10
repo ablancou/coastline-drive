@@ -6,6 +6,7 @@ import { PerspectiveCamera, Vector3 } from "three";
 import { CAMERA_BASE_FOV, CHASE_CAMERA } from "@/game/constants/camera";
 import { computeChaseCameraPose } from "@/game/systems/chase-camera-math";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
+import { useRaceStore } from "@/stores/race-store";
 
 const _pose = {
   position: new Vector3(),
@@ -21,20 +22,35 @@ export function ChaseCamera() {
   const lookPoint = useRef(new Vector3());
   const snapped = useRef(false);
   const roll = useRef(0);
+  const orbit = useRef(0);
 
   useFrame((state, delta) => {
     if (!vehicleTarget.active) return;
 
     const cfg = CHASE_CAMERA;
     const speed = vehicleTarget.velocity.length();
+    const finished = useRaceStore.getState().finished;
 
-    computeChaseCameraPose(
-      vehicleTarget.position,
-      vehicleTarget.quaternion,
-      speed,
-      vehicleTarget.steer,
-      _pose,
-    );
+    if (finished) {
+      // Victory orbit — a slow cinematic circle around the parked car.
+      orbit.current += delta * 0.35;
+      const a = orbit.current;
+      const p = vehicleTarget.position;
+      _pose.position.set(p.x + Math.cos(a) * 7.5, p.y + 2.6, p.z + Math.sin(a) * 7.5);
+      _pose.lookAt.set(p.x, p.y + 0.6, p.z);
+    } else {
+      orbit.current = Math.atan2(
+        camera.position.z - vehicleTarget.position.z,
+        camera.position.x - vehicleTarget.position.x,
+      );
+      computeChaseCameraPose(
+        vehicleTarget.position,
+        vehicleTarget.quaternion,
+        speed,
+        vehicleTarget.steer,
+        _pose,
+      );
+    }
 
     if (!snapped.current) {
       camera.position.copy(_pose.position);

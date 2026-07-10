@@ -32,6 +32,7 @@ let muted = false;
 let musicMuted = false;
 let chordIdx = -1;
 let nextChordAt = 0;
+let nextGullAt = 0;
 
 // Slow chord pad progression (low triads, Hz).
 const CHORDS: number[][] = [
@@ -278,10 +279,37 @@ export function toggleMusic(): boolean {
   return musicMuted;
 }
 
-/** Advance the chord pad over time. Called each frame. */
+/** Distant seagull cry — 2-3 descending "kee-ah" chirps, very quiet. */
+function playGullCry(g: EngineAudioGraph): void {
+  const t0 = g.ctx.currentTime;
+  const n = 2 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < n; i++) {
+    const t = t0 + i * 0.27 + Math.random() * 0.06;
+    const osc = new OscillatorNode(g.ctx, { type: "sawtooth", frequency: 1300 });
+    const bp = new BiquadFilterNode(g.ctx, { type: "bandpass", frequency: 1550, Q: 4 });
+    const env = new GainNode(g.ctx, { gain: 0 });
+    osc.connect(bp).connect(env).connect(g.master);
+    osc.frequency.setValueAtTime(1220 + Math.random() * 180, t);
+    osc.frequency.exponentialRampToValueAtTime(870, t + 0.18);
+    env.gain.setValueAtTime(0.0001, t);
+    env.gain.exponentialRampToValueAtTime(0.045, t + 0.03);
+    env.gain.exponentialRampToValueAtTime(0.0008, t + 0.22);
+    osc.start(t);
+    osc.stop(t + 0.26);
+  }
+}
+
+/** Advance the chord pad + sparse beach ambience. Called each frame. */
 export function updateMusic(): void {
   if (!graph || !running) return;
   const t = graph.ctx.currentTime;
+
+  // Occasional distant gulls over the wave wash.
+  if (t >= nextGullAt) {
+    nextGullAt = t + 9 + Math.random() * 13;
+    if (nextGullAt > 1) playGullCry(graph);
+  }
+
   if (t < nextChordAt) return;
   nextChordAt = t + 5.5;
   chordIdx = (chordIdx + 1) % CHORDS.length;

@@ -4,7 +4,6 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import {
   BoxGeometry,
-  type Group,
   Mesh,
   MeshStandardMaterial,
   Object3D,
@@ -12,10 +11,11 @@ import {
 } from "three";
 import { getChassisRestHeightAboveRoad } from "@/game/constants/spawn";
 import { ROAD_WIDTH, sampleRoadFrame } from "@/game/procedural/geometry/road-path";
+import { trafficPositions } from "@/game/systems/rival-state";
 import { useRaceStore } from "@/stores/race-store";
 
-const COUNT = 7;
-const COLORS = [0xe6e8ea, 0x2b6cb0, 0x2f855a, 0xb7791f, 0x9b2c2c, 0x394a5a, 0xcabf4a];
+const COUNT = 4;
+const COLORS = [0xe6e8ea, 0x2b6cb0, 0xb7791f, 0x394a5a];
 
 interface TrafficCar {
   group: Object3D;
@@ -23,13 +23,12 @@ interface TrafficCar {
   t: number;
   speed: number; // progress per second (fraction of the road)
   lane: number; // lateral offset
-  dir: 1 | -1; // +1 same direction as the player, -1 oncoming
 }
 
 /**
- * Ambient traffic cruising the coastal highway: mostly oncoming cars on the far
- * lane (they whoosh past the other way) plus a couple of slower same-direction
- * cars to overtake. Purely cosmetic — no collision (that's the rivals' job).
+ * Ambient traffic: a few SLOW cars cruising the player's direction — moving
+ * obstacles to overtake, never oncoming ghosts. They register their positions
+ * so the player's soft-collision treats them as solid.
  */
 export function Traffic() {
   const restHeight = useMemo(() => getChassisRestHeightAboveRoad(), []);
@@ -51,8 +50,6 @@ export function Traffic() {
     const tailMat = new MeshStandardMaterial({ color: 0x3a0508, emissive: 0xff2233, emissiveIntensity: 2.2, roughness: 0.4 });
 
     for (let i = 0; i < COUNT; i++) {
-      // First two cars run with the player (slower — overtake fodder); rest oncoming.
-      const dir: 1 | -1 = i < 2 ? 1 : -1;
       const car = new Object3D();
       const paint = new MeshStandardMaterial({
         color: COLORS[i % COLORS.length],
@@ -66,12 +63,11 @@ export function Traffic() {
       const cabin = new Mesh(cabinGeo, paint);
       cabin.position.set(0, 0.52, -0.15);
       car.add(cabin);
-      // Greenhouse glass.
       const glass = new Mesh(new BoxGeometry(1.52, 0.4, 1.5), glassMat);
       glass.position.set(0, 0.54, -0.1);
       car.add(glass);
 
-      // Lights: white at the +Z end, red at the −Z end (local frame).
+      // Lights: white nose, red tail (local +Z faces forward).
       for (const sx of [-0.55, 0.55]) {
         const h = new Mesh(new BoxGeometry(0.28, 0.14, 0.06), headMat);
         h.position.set(sx, 0.14, 1.86);
@@ -97,11 +93,12 @@ export function Traffic() {
       cars.push({
         group: car,
         wheels,
-        t: (i / COUNT + 0.03) % 1,
-        speed: dir === 1 ? 0.012 + (i % 2) * 0.004 : 0.03 + (i % 3) * 0.006,
-        lane: dir * (ROAD_WIDTH * 0.26),
-        dir,
+        // Spread ahead of the player's spawn so they appear as traffic to catch.
+        t: 0.16 + i * 0.18,
+        speed: 0.009 + (i % 2) * 0.003, // cruisers — much slower than the race
+        lane: (i % 2 === 0 ? -1 : 1) * (ROAD_WIDTH * 0.22),
       });
+      trafficPositions[i] = { x: 0, z: 0 };
     }
     carsRef.current = cars;
     return g;
@@ -111,21 +108,23 @@ export function Traffic() {
     const race = useRaceStore.getState();
     const rolling = race.started && !race.paused && !race.finished;
 
-    for (const car of carsRef.current) {
-      if (rolling) car.t = (car.t + car.dir * car.speed * dt + 1) % 1;
+    carsRef.current.forEach((car, i) => {
+      if (rolling) car.t = Math.min(1, car.t + car.speed * dt); // park at the end
       sampleRoadFrame(car.t, frame);
       const x = frame.point.x + frame.side.x * car.lane;
       const z = frame.point.z + frame.side.z * car.lane;
       car.group.position.set(x, restHeight - 0.18, z);
-      // Face travel direction (flip 180° for oncoming cars).
-      const heading = Math.atan2(frame.tangent.x, frame.tangent.z);
-      car.group.rotation.y = car.dir === 1 ? heading : heading + Math.PI;
-      // Roll the wheels for a touch of life.
-      if (rolling) {
+      car.group.rotation.y = Math.atan2(frame.tangent.x, frame.tangent.z);
+      if (rolling && car.t < 1) {
         const spin = car.speed * 90 * dt;
         for (const w of car.wheels) w.rotation.x += spin;
       }
-    }
+      const slot = trafficPositions[i];
+      if (slot) {
+        slot.x = x;
+        slot.z = z;
+      }
+    });
   });
 
   return <primitive object={root} />;

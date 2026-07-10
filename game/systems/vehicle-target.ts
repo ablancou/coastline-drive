@@ -16,6 +16,8 @@ export interface VehicleTargetState {
   boost: boolean;
   /** Smoothed steer angle (radians) — the chase camera looks into corners. */
   steer: number;
+  /** 0..1 — grinding against the road edge this step (drives sand dust). */
+  edge: number;
 }
 
 export const vehicleTarget: VehicleTargetState = {
@@ -28,6 +30,7 @@ export const vehicleTarget: VehicleTargetState = {
   handbrake: false,
   boost: false,
   steer: 0,
+  edge: 0,
 };
 
 export function updateVehicleTarget(
