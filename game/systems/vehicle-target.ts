@@ -12,6 +12,10 @@ export interface VehicleTargetState {
   slip: number;
   /** Handbrake held this frame — drives extra tire smoke. */
   handbrake: boolean;
+  /** Nitro actively firing this frame — drives whoosh audio + exhaust flames. */
+  boost: boolean;
+  /** Smoothed steer angle (radians) — the chase camera looks into corners. */
+  steer: number;
 }
 
 export const vehicleTarget: VehicleTargetState = {
@@ -22,6 +26,8 @@ export const vehicleTarget: VehicleTargetState = {
   shake: 0,
   slip: 0,
   handbrake: false,
+  boost: false,
+  steer: 0,
 };
 
 export function updateVehicleTarget(

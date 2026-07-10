@@ -7,7 +7,15 @@ import {
   type RapierRigidBody,
 } from "@react-three/rapier";
 import { useEffect, useMemo, useRef } from "react";
-import { Object3D, Quaternion, Vector3 } from "three";
+import {
+  AdditiveBlending,
+  ConeGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  Object3D,
+  Quaternion,
+  Vector3,
+} from "three";
 import { TELEMETRY_FLUSH_INTERVAL } from "@/game/constants/input";
 import { PHYSICS_TIMESTEP } from "@/game/constants/physics";
 import { getChassisRestHeightAboveRoad, getVehicleSpawnPose } from "@/game/constants/spawn";
@@ -93,6 +101,27 @@ export function VehicleController() {
 
   // Rebuild the body when the selected car changes (rare — Garage only).
   const bodyGroup = useMemo(() => createCarBody(carId), [carId]);
+
+  // Nitro exhaust flames — additive blue cones at the twin pipes, render-only.
+  const flames = useMemo(() => {
+    const geo = new ConeGeometry(0.085, 0.55, 8);
+    const mat = new MeshBasicMaterial({
+      color: 0x66b8ff,
+      transparent: true,
+      opacity: 0.85,
+      blending: AdditiveBlending,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    return [-0.32, 0.32].map((x) => {
+      const m = new Mesh(geo, mat);
+      m.position.set(x, -0.1, -2.3);
+      m.rotation.x = -Math.PI / 2; // tip points backward (−Z)
+      m.visible = false;
+      bodyGroup.add(m);
+      return m;
+    });
+  }, [bodyGroup]);
   const wheelObjects = useMemo(
     () => VEHICLE_CONFIG.wheels.map((w) => createWheelMesh(w.radius, wheelColor)),
     [wheelColor],
@@ -182,6 +211,22 @@ export function VehicleController() {
     updateVehicleTarget(chassis.translation(), chassis.rotation(), _vel);
     vehicleTarget.slip = wrapAngle(sim.heading - sim.velAngle);
     vehicleTarget.handbrake = inputRef.current.handbrake;
+    vehicleTarget.steer = sim.steerAngle;
+
+    // Nitro state (mirrors stepVehicle's boost gate) → flames + whoosh audio.
+    const boosting =
+      inputRef.current.boost && sim.nitro > 0.02 && sim.speedMs > 0.5;
+    vehicleTarget.boost = boosting;
+    const ft = state.clock.elapsedTime;
+    for (let i = 0; i < flames.length; i++) {
+      const flame = flames[i]!;
+      flame.visible = boosting;
+      if (boosting) {
+        // Flicker the flame length/width — reads as a live jet.
+        const s = 0.75 + 0.45 * Math.abs(Math.sin(ft * 43 + i * 2.1));
+        flame.scale.set(0.85 + 0.3 * Math.sin(ft * 61 + i), s, 0.85);
+      }
+    }
 
     const elapsed = state.clock.elapsedTime;
     if (elapsed - lastTelemetryFlushRef.current >= TELEMETRY_FLUSH_INTERVAL) {

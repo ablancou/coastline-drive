@@ -32,6 +32,7 @@ export function ChaseCamera() {
       vehicleTarget.position,
       vehicleTarget.quaternion,
       speed,
+      vehicleTarget.steer,
       _pose,
     );
 

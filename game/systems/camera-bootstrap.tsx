@@ -21,7 +21,7 @@ export function CameraBootstrap() {
   const { camera } = useThree();
 
   useEffect(() => {
-    computeChaseCameraPose(spawn.position, spawnQuat, 0, _pose);
+    computeChaseCameraPose(spawn.position, spawnQuat, 0, 0, _pose);
     camera.position.copy(_pose.position);
     camera.lookAt(_pose.lookAt);
   }, [camera]);

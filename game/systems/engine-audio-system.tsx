@@ -36,6 +36,7 @@ export function EngineAudioSystem() {
       s.handbrake,
       Math.abs(s.steer),
       Math.abs(vehicleTarget.slip),
+      vehicleTarget.boost,
     );
   });
 

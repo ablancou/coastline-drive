@@ -15,6 +15,8 @@ interface EngineAudioGraph {
   lowpass: BiquadFilterNode;
   tireGain: GainNode;
   windGain: GainNode;
+  boostGain: GainNode;
+  boostBand: BiquadFilterNode;
   musicGain: GainNode;
   musicOscs: OscillatorNode[];
   noise: AudioBuffer;
@@ -106,6 +108,17 @@ function build(): EngineAudioGraph {
   windSrc.connect(windLp).connect(windGain).connect(master);
   windSrc.start();
 
+  // Nitro whoosh: banded noise that swells while boosting.
+  const boostSrc = new AudioBufferSourceNode(ctx, { buffer: noise, loop: true });
+  const boostBand = new BiquadFilterNode(ctx, {
+    type: "bandpass",
+    frequency: 900,
+    Q: 0.8,
+  });
+  const boostGain = new GainNode(ctx, { gain: 0 });
+  boostSrc.connect(boostBand).connect(boostGain).connect(master);
+  boostSrc.start();
+
   // Ambient ocean wash: filtered noise with a slow LFO swelling the gain.
   const waveSrc = new AudioBufferSourceNode(ctx, { buffer: noise, loop: true });
   const waveLp = new BiquadFilterNode(ctx, { type: "lowpass", frequency: 360, Q: 0.6 });
@@ -138,6 +151,8 @@ function build(): EngineAudioGraph {
     lowpass,
     tireGain,
     windGain,
+    boostGain,
+    boostBand,
     musicGain,
     musicOscs,
     noise,
@@ -211,6 +226,40 @@ export function playImpact(intensity: number): void {
   thud.stop(t + 0.28);
 }
 
+/** Countdown blip — short low tone for 3/2/1, longer higher tone on GO. */
+export function playCountdownBeep(go: boolean): void {
+  if (!graph || !running) return;
+  const g = graph;
+  const t = g.ctx.currentTime;
+  const osc = new OscillatorNode(g.ctx, { type: "sine", frequency: go ? 1174.7 : 587.3 });
+  const env = new GainNode(g.ctx, { gain: 0 });
+  osc.connect(env).connect(g.master);
+  env.gain.setValueAtTime(0.0001, t);
+  env.gain.exponentialRampToValueAtTime(go ? 0.34 : 0.2, t + 0.012);
+  env.gain.exponentialRampToValueAtTime(0.0008, t + (go ? 0.5 : 0.16));
+  osc.start(t);
+  osc.stop(t + (go ? 0.55 : 0.2));
+}
+
+/** Short victory arpeggio when the player crosses the finish line. */
+export function playFinishFanfare(): void {
+  if (!graph || !running) return;
+  const g = graph;
+  const t0 = g.ctx.currentTime;
+  const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+  notes.forEach((f, i) => {
+    const t = t0 + i * 0.13;
+    const osc = new OscillatorNode(g.ctx, { type: "triangle", frequency: f });
+    const env = new GainNode(g.ctx, { gain: 0 });
+    osc.connect(env).connect(g.master);
+    env.gain.setValueAtTime(0.0001, t);
+    env.gain.exponentialRampToValueAtTime(i === notes.length - 1 ? 0.3 : 0.22, t + 0.015);
+    env.gain.exponentialRampToValueAtTime(0.0008, t + (i === notes.length - 1 ? 0.7 : 0.24));
+    osc.start(t);
+    osc.stop(t + 0.75);
+  });
+}
+
 export function setEngineAudioMuted(value: boolean): void {
   muted = value;
   if (!graph) return;
@@ -253,6 +302,7 @@ export function updateEngineAudio(
   handbrake: boolean,
   steerAbs: number,
   slipAbs = 0,
+  boost = false,
 ): void {
   if (!graph || !running) return;
   const g = graph;
@@ -291,4 +341,8 @@ export function updateEngineAudio(
   const screech = (handbrake ? 0.45 : 0) + steer * speedNorm * 0.35 + slip * speedNorm * 0.8;
   const tireBase = speedNorm * 0.06;
   g.tireGain.gain.setTargetAtTime(tireBase + screech * speedNorm * 0.3, t, 0.06);
+
+  // Nitro whoosh: fast swell in, quick fade out; pitch rises with speed.
+  g.boostGain.gain.setTargetAtTime(boost ? 0.16 : 0, t, boost ? 0.06 : 0.12);
+  g.boostBand.frequency.setTargetAtTime(700 + speedNorm * 900, t, 0.1);
 }

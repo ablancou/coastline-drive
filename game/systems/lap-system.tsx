@@ -2,6 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
+import { playFinishFanfare } from "@/game/procedural/audio/engine-audio";
 import { getRoadProgress } from "@/game/procedural/geometry/road-path";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 import { useLapStore } from "@/stores/lap-store";
@@ -28,6 +29,7 @@ export function LapSystem() {
       const trackId = SKY_PRESETS[idx % SKY_PRESETS.length]?.id ?? "unknown";
       useLapStore.getState().completeLap(performance.now(), trackId);
       useRaceStore.getState().setFinished(true);
+      playFinishFanfare();
     }
   });
 

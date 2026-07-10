@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { playCountdownBeep } from "@/game/procedural/audio/engine-audio";
 import { useLapStore } from "@/stores/lap-store";
 import { useRaceStore } from "@/stores/race-store";
 
@@ -12,7 +13,13 @@ export function Countdown() {
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const step = (value: number, delay: number) =>
-      timers.push(setTimeout(() => !cancelled && setN(value), delay));
+      timers.push(
+        setTimeout(() => {
+          if (cancelled) return;
+          setN(value);
+          playCountdownBeep(value === 0);
+        }, delay),
+      );
 
     step(3, 0);
     step(2, 800);
