@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { playCountdownBeep } from "@/game/procedural/audio/engine-audio";
+import { playBark, playCountdownBeep } from "@/game/procedural/audio/engine-audio";
+import { useCustomizationStore } from "@/stores/customization-store";
 import { useLapStore } from "@/stores/lap-store";
 import { useRaceStore } from "@/stores/race-store";
 
@@ -18,6 +19,13 @@ export function Countdown() {
           if (cancelled) return;
           setN(value);
           playCountdownBeep(value === 0);
+          // The pack barks with excitement on GO.
+          if (value === 0 && useCustomizationStore.getState().dogCount > 0) {
+            playBark();
+            if (useCustomizationStore.getState().dogCount > 2) {
+              setTimeout(() => !cancelled && playBark(), 180);
+            }
+          }
         }, delay),
       );
 

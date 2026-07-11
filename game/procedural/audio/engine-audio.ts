@@ -242,6 +242,36 @@ export function playCountdownBeep(go: boolean): void {
   osc.stop(t + (go ? 0.55 : 0.2));
 }
 
+/** A happy little "wuf!" — quick pitch-drop tone + noise snap. */
+export function playBark(): void {
+  if (!graph || !running) return;
+  const g = graph;
+  const t = g.ctx.currentTime;
+
+  const osc = new OscillatorNode(g.ctx, { type: "square", frequency: 520 });
+  const env = new GainNode(g.ctx, { gain: 0 });
+  const lp = new BiquadFilterNode(g.ctx, { type: "lowpass", frequency: 1200, Q: 1 });
+  osc.connect(lp).connect(env).connect(g.master);
+  osc.frequency.setValueAtTime(560, t);
+  osc.frequency.exponentialRampToValueAtTime(220, t + 0.09);
+  env.gain.setValueAtTime(0.0001, t);
+  env.gain.exponentialRampToValueAtTime(0.16, t + 0.012);
+  env.gain.exponentialRampToValueAtTime(0.0008, t + 0.12);
+  osc.start(t);
+  osc.stop(t + 0.14);
+
+  // Breathy snap layered on top.
+  const src = new AudioBufferSourceNode(g.ctx, { buffer: g.noise });
+  const bp = new BiquadFilterNode(g.ctx, { type: "bandpass", frequency: 900, Q: 1.2 });
+  const nenv = new GainNode(g.ctx, { gain: 0 });
+  src.connect(bp).connect(nenv).connect(g.master);
+  nenv.gain.setValueAtTime(0.0001, t);
+  nenv.gain.exponentialRampToValueAtTime(0.08, t + 0.01);
+  nenv.gain.exponentialRampToValueAtTime(0.0008, t + 0.09);
+  src.start(t);
+  src.stop(t + 0.1);
+}
+
 /** Short victory arpeggio when the player crosses the finish line. */
 export function playFinishFanfare(): void {
   if (!graph || !running) return;

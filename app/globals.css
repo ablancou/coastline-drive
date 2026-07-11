@@ -482,6 +482,12 @@ body {
     border-color 0.12s ease;
 }
 
+.pill--num {
+  min-width: 2.6rem;
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
+}
+
 .pill--active {
   background: linear-gradient(180deg, #ffffff 0%, #b8d4e8 100%);
   color: #06101a;

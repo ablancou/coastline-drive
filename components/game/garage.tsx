@@ -27,10 +27,32 @@ interface GarageProps {
 
 const REGIONS = ["México", "Europa"] as const;
 
+const DOG_COLORS = [
+  { id: "dorado", hex: "#c98d4e", label: "Dorado" },
+  { id: "negro", hex: "#2a2622", label: "Negro" },
+  { id: "blanco", hex: "#e8e2d6", label: "Blanco" },
+  { id: "cafe", hex: "#6e4a2f", label: "Café" },
+  { id: "gris", hex: "#8d8d90", label: "Gris" },
+] as const;
+
 /** Configurator page — car color, driver, and destination (track). */
 export function Garage({ onStart, onBack }: GarageProps) {
-  const { carId, carColor, wheelColor, driver, setCarId, setCarColor, setWheelColor, setDriver } =
-    useCustomizationStore();
+  const {
+    carId,
+    carColor,
+    wheelColor,
+    driver,
+    dogCount,
+    dogColor,
+    dogSize,
+    setCarId,
+    setCarColor,
+    setWheelColor,
+    setDriver,
+    setDogCount,
+    setDogColor,
+    setDogSize,
+  } = useCustomizationStore();
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const setSky = useSceneStore((s) => s.setSky);
   const night = useSceneStore((s) => s.night);
@@ -124,6 +146,56 @@ export function Garage({ onStart, onBack }: GarageProps) {
                 Mujer
               </button>
             </div>
+          </section>
+
+          <section className="garage__section">
+            <span className="custom__label">PERROS · compañeros de viaje</span>
+            <div className="custom__toggle">
+              {[0, 1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className={`pill pill--num${dogCount === n ? " pill--active" : ""}`}
+                  onClick={() => setDogCount(n)}
+                  aria-label={`${n} perros`}
+                >
+                  {n === 0 ? "Sin" : n}
+                </button>
+              ))}
+            </div>
+            {dogCount > 0 && (
+              <>
+                <div className="custom__swatches">
+                  {DOG_COLORS.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`swatch${dogColor === c.hex ? " swatch--active" : ""}`}
+                      style={{ background: c.hex }}
+                      onClick={() => setDogColor(c.hex)}
+                      aria-label={c.label}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+                <div className="custom__toggle">
+                  <button
+                    type="button"
+                    className={`pill${dogSize === "chico" ? " pill--active" : ""}`}
+                    onClick={() => setDogSize("chico")}
+                  >
+                    Chico
+                  </button>
+                  <button
+                    type="button"
+                    className={`pill${dogSize === "grande" ? " pill--active" : ""}`}
+                    onClick={() => setDogSize("grande")}
+                  >
+                    Grande
+                  </button>
+                </div>
+              </>
+            )}
           </section>
 
           <div className="garage__row">

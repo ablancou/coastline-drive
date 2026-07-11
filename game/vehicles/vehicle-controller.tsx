@@ -21,6 +21,7 @@ import { PHYSICS_TIMESTEP } from "@/game/constants/physics";
 import { getChassisRestHeightAboveRoad, getVehicleSpawnPose } from "@/game/constants/spawn";
 import { VEHICLE_CONFIG } from "@/game/constants/vehicle";
 import { createCarBody } from "@/game/procedural/geometry/car-designs";
+import { createDog, type DogRefs } from "@/game/procedural/geometry/dog";
 import { createWheelMesh } from "@/game/procedural/geometry/wheel";
 import {
   getRoadSurfaceAt,
@@ -98,6 +99,10 @@ export function VehicleController() {
   const carColor = useCustomizationStore((s) => s.carColor);
   const wheelColor = useCustomizationStore((s) => s.wheelColor);
   const driver = useCustomizationStore((s) => s.driver);
+  const dogCount = useCustomizationStore((s) => s.dogCount);
+  const dogColor = useCustomizationStore((s) => s.dogColor);
+  const dogSize = useCustomizationStore((s) => s.dogSize);
+  const dogRefsRef = useRef<DogRefs[]>([]);
 
   // Rebuild the body when the selected car changes (rare — Garage only).
   const bodyGroup = useMemo(() => createCarBody(carId), [carId]);
@@ -143,6 +148,36 @@ export function VehicleController() {
     const paint = bodyGroup.userData.paintMaterial as MeshPhysicalMaterial | undefined;
     paint?.color.set(carColor);
   }, [bodyGroup, carColor]);
+
+  // Companion dogs: first rides shotgun, the rest sit on the rear deck.
+  // Attached to the leaning body group; rebuilt when the Garage config changes.
+  useEffect(() => {
+    const SEATS: [number, number, number][] = [
+      [-0.42, -0.04, -0.3], // copilot (RHS — driver is LHD)
+      [-0.55, 0.18, -1.08],
+      [0.55, 0.18, -1.08],
+      [-0.18, 0.2, -1.16],
+      [0.18, 0.2, -1.16],
+    ];
+    const dogs: Object3D[] = [];
+    const refs: DogRefs[] = [];
+    const base = dogSize === "grande" ? 0.66 : 0.5;
+    for (let i = 0; i < Math.min(dogCount, SEATS.length); i++) {
+      const dog = createDog(dogColor);
+      const seat = SEATS[i]!;
+      dog.position.set(...seat);
+      dog.scale.setScalar((i === 0 ? base : base * 0.85) * (1 - (i % 2) * 0.06));
+      dog.rotation.y = i === 0 ? 0 : (i % 2 === 0 ? -1 : 1) * 0.15;
+      bodyGroup.add(dog);
+      dogs.push(dog);
+      refs.push(dog.userData.dogRefs as DogRefs);
+    }
+    dogRefsRef.current = refs;
+    return () => {
+      for (const d of dogs) bodyGroup.remove(d);
+      dogRefsRef.current = [];
+    };
+  }, [bodyGroup, dogCount, dogColor, dogSize]);
 
   // Respawn the car at the start on each fresh run (restart / mode change).
   const runId = useRaceStore((s) => s.runId);
@@ -226,6 +261,21 @@ export function VehicleController() {
         const s = 0.75 + 0.45 * Math.abs(Math.sin(ft * 43 + i * 2.1));
         flame.scale.set(0.85 + 0.3 * Math.sin(ft * 61 + i), s, 0.85);
       }
+    }
+
+    // Companion dogs: happy-passenger wiggle — head sway, ears flapping in the
+    // wind, tail wagging (frantic under nitro). Render-only.
+    const dogSpeedNorm = Math.min(1, Math.abs(sim.speedMs) / 38);
+    const wagRate = boosting ? 17 : 7 + dogSpeedNorm * 4;
+    for (let i = 0; i < dogRefsRef.current.length; i++) {
+      const d = dogRefsRef.current[i]!;
+      d.head.rotation.z = Math.sin(ft * 1.9 + i * 1.3) * 0.08;
+      d.head.rotation.x =
+        -0.08 * dogSpeedNorm + Math.sin(ft * 2.4 + i * 0.9) * 0.05;
+      const flap = -0.55 * dogSpeedNorm + Math.sin(ft * 12 + i * 2) * 0.1 * dogSpeedNorm;
+      d.earL.rotation.x = flap;
+      d.earR.rotation.x = flap;
+      d.tail.rotation.y = Math.sin(ft * wagRate + i * 2.2) * 0.55;
     }
 
     const elapsed = state.clock.elapsedTime;
