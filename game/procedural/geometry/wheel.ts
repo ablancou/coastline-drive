@@ -73,12 +73,26 @@ export function createWheelMesh(radius: number, rimColor: string | number = 0xc9
     wheel.add(spoke);
   }
 
-  // Hub cap
+  // Hub cap + vintage knock-off spinner (two crossed ears)
   const hubGeo = new CylinderGeometry(radius * 0.18, radius * 0.18, width * 0.5, 16);
   hubGeo.rotateZ(Math.PI / 2);
   const hub = new Mesh(hubGeo, rimMat);
   hub.position.x = width * 0.35;
   wheel.add(hub);
+
+  const chromeMat = new MeshStandardMaterial({
+    color: 0xe8edf2,
+    metalness: 1,
+    roughness: 0.1,
+    envMapIntensity: 1.7,
+  });
+  const earGeo = new BoxGeometry(0.05, radius * 0.34, 0.05);
+  for (const rot of [0, Math.PI / 2]) {
+    const ear = new Mesh(earGeo, chromeMat);
+    ear.rotation.x = rot;
+    ear.position.x = width * 0.62;
+    wheel.add(ear);
+  }
 
   // Brake disc + caliper (inboard)
   const discGeo = new CylinderGeometry(radius * 0.7, radius * 0.7, 0.04, 24);

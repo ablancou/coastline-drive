@@ -127,13 +127,33 @@ export function createCarBody(
     add(new BoxGeometry(0.34, 0.22, 0.07), leather, [sx, 0.17, -0.52]);
   }
 
-  // --- Windscreen (height per design) ---
+  // --- Windscreen (height per design) with chrome side pillars ---
   add(new BoxGeometry(1.0, 0.03, 0.05), chrome, [0, 0.36, 0.42], [1, 1, 1], [-0.5, 0, 0]);
   add(new BoxGeometry(0.94, design.screenHeight, 0.02), glass, [0, 0.41, 0.41], [1, 1, 1], [-0.5, 0, 0]);
+  for (const s of [-1, 1] as const) {
+    add(
+      new BoxGeometry(0.025, design.screenHeight + 0.04, 0.03),
+      chrome,
+      [s * 0.475, 0.41, 0.41],
+      [1, 1, 1],
+      [-0.5, 0, 0],
+    );
+  }
 
-  // --- Steering wheel (LHD) ---
+  // --- Dashboard: body-color cowl top + two chrome-ringed gauges (LHD) ---
+  add(new BoxGeometry(0.94, 0.05, 0.16), paint, [0, 0.3, 0.3]);
+  const gaugeRing = new TorusGeometry(0.045, 0.01, 8, 16);
+  const gaugeFace = new MeshStandardMaterial({ color: 0xf0ead8, roughness: 0.5 });
+  for (const gx of [0.3, 0.54]) {
+    add(gaugeRing, chrome, [gx, 0.27, 0.245], [1, 1, 1], [-0.35, 0, 0]);
+    add(unit, gaugeFace, [gx, 0.27, 0.24], [0.04, 0.04, 0.008], [-0.35, 0, 0]);
+  }
+
+  // --- Steering wheel (LHD) + gear shifter on the tunnel ---
   add(new CylinderGeometry(0.02, 0.02, 0.18, 8), chrome, [0.42, 0.18, 0.12], [1, 1, 1], [Math.PI / 2 - 0.5, 0, 0]);
   add(unit, interiorMat, [0.42, 0.22, 0.04], [0.14, 0.14, 0.025]);
+  add(new CylinderGeometry(0.012, 0.014, 0.16, 8), chrome, [0.08, 0.12, -0.08], [1, 1, 1], [-0.35, 0, 0]);
+  add(unit, leather, [0.08, 0.2, -0.11], [0.03, 0.03, 0.03]);
 
   // --- Round lamps (chrome bezels) + intake + over-riders ---
   const bezel = new TorusGeometry(0.15, 0.02, 8, 18);
@@ -153,6 +173,32 @@ export function createCarBody(
   add(pipe, chrome, [0.32, -0.1, -2.0], [1, 1, 1], [Math.PI / 2, 0, 0]);
   add(new BoxGeometry(0.02, 0.03, 3.0), chrome, [-0.86, 0.14, -0.1]);
   add(new BoxGeometry(0.02, 0.03, 3.0), chrome, [0.86, 0.14, -0.1]);
+
+  // --- Door seams + side vents (dark recessed lines; 550-style gills) ---
+  const seamMat = new MeshStandardMaterial({ color: 0x101216, roughness: 0.6 });
+  for (const s of [-1, 1] as const) {
+    // Vertical door cut lines fore/aft of the cockpit.
+    add(new BoxGeometry(0.012, 0.24, 0.015), seamMat, [s * 0.885, -0.05, 0.5]);
+    add(new BoxGeometry(0.012, 0.24, 0.015), seamMat, [s * 0.885, -0.05, -0.62]);
+    // Three angled gills behind the front wheel.
+    for (let k = 0; k < 3; k++) {
+      add(
+        new BoxGeometry(0.015, 0.11, 0.03),
+        seamMat,
+        [s * 0.885, -0.14, 0.86 - k * 0.09],
+        [1, 1, 1],
+        [0, 0, s * 0.25],
+      );
+    }
+    // Fuel filler cap on the left rear deck only (vintage single-filler).
+    if (s === 1) {
+      add(new CylinderGeometry(0.07, 0.07, 0.02, 14), chrome, [0.45, 0.265, -1.15]);
+    }
+  }
+
+  // --- Rear plate badge (original "CD" mark — no real-world branding) ---
+  add(new BoxGeometry(0.34, 0.12, 0.02), chrome, [0, -0.02, -2.07]);
+  add(new BoxGeometry(0.3, 0.09, 0.01), interiorMat, [0, -0.02, -2.08]);
 
   // --- Chrome side mirrors on slim stalks (cowl-mounted) ---
   const mirrorFace = new MeshStandardMaterial({ color: 0x9fb2c4, metalness: 1, roughness: 0.05, envMapIntensity: 1.8 });
