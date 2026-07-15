@@ -6,14 +6,17 @@ import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { SPAWN_T } from "@/game/constants/spawn";
 import { getTrack } from "@/game/constants/tracks";
 import { getRoadCurve, setActiveTrack } from "@/game/procedural/geometry/road-path";
+import { rivalPositions } from "@/game/systems/rival-state";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
 import { useSceneStore } from "@/stores/scene-store";
 
 const VB = 100;
+const MAX_RIVALS = 4;
 
-/** Top-down minimap of the circuit with a live marker for the car. */
+/** Top-down minimap: circuit, live car marker, and rival blips. */
 export function Minimap() {
   const dotRef = useRef<SVGCircleElement>(null);
+  const rivalRefs = useRef<(SVGCircleElement | null)[]>([]);
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const trackId = SKY_PRESETS[skyIndex % SKY_PRESETS.length]?.trackId ?? "stadium";
 
@@ -60,6 +63,20 @@ export function Minimap() {
         dotRef.current.setAttribute("cx", x.toFixed(1));
         dotRef.current.setAttribute("cy", y.toFixed(1));
       }
+      // Rival blips — parked far offscreen when absent (time trial).
+      for (let i = 0; i < MAX_RIVALS; i++) {
+        const el = rivalRefs.current[i];
+        if (!el) continue;
+        const rp = rivalPositions[i];
+        if (rp) {
+          const [x, y] = data.project(rp.x, rp.z);
+          el.setAttribute("cx", x.toFixed(1));
+          el.setAttribute("cy", y.toFixed(1));
+        } else {
+          el.setAttribute("cx", "-20");
+          el.setAttribute("cy", "-20");
+        }
+      }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -72,6 +89,18 @@ export function Minimap() {
         <path d={data.path} className="minimap__track" />
         <circle cx={data.start[0]} cy={data.start[1]} r="2.6" className="minimap__start" />
         <circle cx={data.finish[0]} cy={data.finish[1]} r="2.8" className="minimap__finish" />
+        {Array.from({ length: MAX_RIVALS }, (_, i) => (
+          <circle
+            key={i}
+            ref={(el) => {
+              rivalRefs.current[i] = el;
+            }}
+            cx="-20"
+            cy="-20"
+            r="2.2"
+            className="minimap__rival"
+          />
+        ))}
         <circle ref={dotRef} cx="50" cy="50" r="3.2" className="minimap__car" />
       </svg>
     </div>

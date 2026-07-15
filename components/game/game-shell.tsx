@@ -40,6 +40,7 @@ export function GameShell() {
   const started = useRaceStore((s) => s.started);
   const position = useRaceStore((s) => s.position);
   const totalRacers = useRaceStore((s) => s.totalRacers);
+  const timeTrial = useRaceStore((s) => s.timeTrial);
   const hudHidden = useSceneStore((s) => s.hudHidden);
   const lastLapMs = useLapStore((s) => s.lastLapMs);
   const bestLapMs = useLapStore((s) => s.bestLapMs);
@@ -123,10 +124,31 @@ export function GameShell() {
             </div>
           )}
 
-          {finished && (
+          {finished && (() => {
+            const won = !timeTrial && totalRacers > 1 && position === 1;
+            const isRecord =
+              lastLapMs != null && bestLapMs != null && lastLapMs <= bestLapMs;
+            return (
             <div className="overlay">
+              {(won || isRecord) && (
+                <div className="confetti" aria-hidden="true">
+                  {Array.from({ length: 28 }, (_, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        left: `${(i * 37) % 100}%`,
+                        animationDelay: `${((i * 13) % 20) / 14}s`,
+                        background: ["#ffd27a", "#5b9bff", "#ffffff", "#ff6a4a", "#7cffb2"][i % 5],
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
               <div className="overlay__panel">
-                <h2 className="overlay__title overlay__title--win">¡META!</h2>
+                <h2 className="overlay__title overlay__title--win">
+                  {won ? "¡VICTORIA!" : "¡META!"}
+                </h2>
+                {isRecord && <span className="overlay__record">✦ NUEVO RÉCORD ✦</span>}
                 <div className="overlay__stats">
                   {totalRacers > 1 && (
                     <div className="overlay__stat">
@@ -153,7 +175,8 @@ export function GameShell() {
                 </button>
               </div>
             </div>
-          )}
+            );
+          })()}
         </>
       )}
     </main>

@@ -14,6 +14,7 @@ import { Guardrails } from "@/game/environment/guardrails";
 import { Ocean } from "@/game/environment/ocean";
 import { Seagulls } from "@/game/environment/seagulls";
 import { ShoreFoam } from "@/game/environment/shore-foam";
+import { StreetLamps } from "@/game/environment/street-lamps";
 import {
   createRoadGeometry,
   createRoadMarkingsGeometry,
@@ -86,6 +87,7 @@ export function CoastalScene() {
       <ShoreFoam />
       <Boats />
       <Seagulls />
+      <StreetLamps />
       <FinishLine />
     </group>
   );

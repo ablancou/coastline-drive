@@ -965,6 +965,46 @@ body {
   }
 }
 
+/* ---- Victory confetti + record tag (results overlay) ---- */
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti span {
+  position: absolute;
+  top: -5%;
+  width: 9px;
+  height: 15px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: confetti-fall 3s ease-in infinite;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotateZ(0deg) rotateY(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(108vh) rotateZ(660deg) rotateY(720deg);
+  }
+}
+
+.overlay__record {
+  display: block;
+  margin: -0.4rem 0 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: #7cffb2;
+  text-shadow: 0 0 12px rgba(124, 255, 178, 0.5);
+  animation: hb-pulse 0.7s ease-in-out infinite alternate;
+}
+
 /* ---- Best-lap banner ---- */
 .best-banner {
   position: absolute;
@@ -1040,6 +1080,11 @@ body {
   fill: #ffffff;
   stroke: #e85d4a;
   stroke-width: 1.4;
+}
+
+.minimap__rival {
+  fill: #ffb02e;
+  opacity: 0.85;
 }
 
 @media (max-width: 479px) {
