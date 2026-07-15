@@ -1,9 +1,16 @@
 "use client";
 
-import { Html, OrbitControls, useTexture } from "@react-three/drei";
+import { Html, OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useMemo, useRef, useState } from "react";
-import { BackSide, type Group, SRGBColorSpace, Vector3 } from "three";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  BackSide,
+  type Group,
+  SRGBColorSpace,
+  type Texture,
+  TextureLoader,
+  Vector3,
+} from "three";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { useSceneStore } from "@/stores/scene-store";
 
@@ -39,8 +46,24 @@ function GlobeScene() {
   const [hover, setHover] = useState<number | null>(null);
   const spin = useRef<Group>(null);
 
-  const earth = useTexture("/assets/third-party/textures/earth_2048.jpg");
-  earth.colorSpace = SRGBColorSpace;
+  // Load without Suspense: the globe renders immediately (plain ocean-blue
+  // sphere + pins) and the Earth texture pops in when ready. Avoids the whole
+  // canvas hanging on a suspended loader when multiple canvases coexist.
+  const [earth, setEarth] = useState<Texture | null>(null);
+  useEffect(() => {
+    let disposed = false;
+    new TextureLoader().load("/assets/third-party/textures/earth_2048.jpg", (tex) => {
+      if (disposed) {
+        tex.dispose();
+        return;
+      }
+      tex.colorSpace = SRGBColorSpace;
+      setEarth(tex);
+    });
+    return () => {
+      disposed = true;
+    };
+  }, []);
 
   const pins = useMemo(
     () =>
@@ -65,7 +88,12 @@ function GlobeScene() {
         <group ref={spin}>
           <mesh>
             <sphereGeometry args={[R, 64, 64]} />
-            <meshStandardMaterial map={earth} roughness={0.85} metalness={0.05} />
+            <meshStandardMaterial
+              map={earth}
+              color={earth ? "#ffffff" : "#1d4e7a"}
+              roughness={0.85}
+              metalness={0.05}
+            />
           </mesh>
 
           {pins.map((pin) => {

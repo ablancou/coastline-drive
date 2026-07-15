@@ -21,7 +21,7 @@ import { PHYSICS_TIMESTEP } from "@/game/constants/physics";
 import { getChassisRestHeightAboveRoad, getVehicleSpawnPose } from "@/game/constants/spawn";
 import { VEHICLE_CONFIG } from "@/game/constants/vehicle";
 import { createCarBody } from "@/game/procedural/geometry/car-designs";
-import { createDog, type DogRefs } from "@/game/procedural/geometry/dog";
+import { createDog, DOG_SEATS, dogPose, type DogRefs } from "@/game/procedural/geometry/dog";
 import { createWheelMesh } from "@/game/procedural/geometry/wheel";
 import {
   getRoadSurfaceAt,
@@ -152,22 +152,14 @@ export function VehicleController() {
   // Companion dogs: first rides shotgun, the rest sit on the rear deck.
   // Attached to the leaning body group; rebuilt when the Garage config changes.
   useEffect(() => {
-    const SEATS: [number, number, number][] = [
-      [-0.42, -0.04, -0.3], // copilot (RHS — driver is LHD)
-      [-0.55, 0.18, -1.08],
-      [0.55, 0.18, -1.08],
-      [-0.18, 0.2, -1.16],
-      [0.18, 0.2, -1.16],
-    ];
     const dogs: Object3D[] = [];
     const refs: DogRefs[] = [];
-    const base = dogSize === "grande" ? 0.66 : 0.5;
-    for (let i = 0; i < Math.min(dogCount, SEATS.length); i++) {
+    for (let i = 0; i < Math.min(dogCount, DOG_SEATS.length); i++) {
       const dog = createDog(dogColor);
-      const seat = SEATS[i]!;
-      dog.position.set(...seat);
-      dog.scale.setScalar((i === 0 ? base : base * 0.85) * (1 - (i % 2) * 0.06));
-      dog.rotation.y = i === 0 ? 0 : (i % 2 === 0 ? -1 : 1) * 0.15;
+      const pose = dogPose(i, dogSize);
+      dog.position.set(...DOG_SEATS[i]!);
+      dog.scale.setScalar(pose.scale);
+      dog.rotation.y = pose.yaw;
       bodyGroup.add(dog);
       dogs.push(dog);
       refs.push(dog.userData.dogRefs as DogRefs);

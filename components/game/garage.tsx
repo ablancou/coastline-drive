@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CarPreview } from "@/components/game/car-preview";
 import { DestinationGlobe } from "@/components/game/destination-globe";
 import { SiteFooter } from "@/components/game/site-footer";
 import { CAR_DESIGNS } from "@/game/constants/cars";
@@ -77,6 +78,7 @@ export function Garage({ onStart, onBack }: GarageProps) {
 
         <div className="garage__body">
           <div className="garage__col">
+          <CarPreview />
           <section className="garage__section">
             <span className="custom__label">AUTO</span>
             <div className="car-grid">

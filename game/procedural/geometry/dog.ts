@@ -17,6 +17,24 @@ export interface DogRefs {
 
 const unit = new SphereGeometry(1, 16, 12);
 
+/** Seat offsets in the car body's local frame: shotgun first, then rear deck. */
+export const DOG_SEATS: [number, number, number][] = [
+  [-0.42, -0.04, -0.3], // copilot (RHS — driver is LHD)
+  [-0.55, 0.18, -1.08],
+  [0.55, 0.18, -1.08],
+  [-0.18, 0.2, -1.16],
+  [0.18, 0.2, -1.16],
+];
+
+/** Scale + heading for dog `i` so the pack reads varied, not cloned. */
+export function dogPose(i: number, size: "chico" | "grande"): { scale: number; yaw: number } {
+  const base = size === "grande" ? 0.66 : 0.5;
+  return {
+    scale: (i === 0 ? base : base * 0.85) * (1 - (i % 2) * 0.06),
+    yaw: i === 0 ? 0 : (i % 2 === 0 ? -1 : 1) * 0.15,
+  };
+}
+
 /**
  * A small stylized companion dog in a sitting pose, facing +Z (car forward).
  * ~1 unit tall before scaling. Head, ears and tail are separate pivots so the
