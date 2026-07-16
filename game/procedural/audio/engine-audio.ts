@@ -361,10 +361,22 @@ export function updateEngineAudio(
   steerAbs: number,
   slipAbs = 0,
   boost = false,
+  active = true,
 ): void {
   if (!graph || !running) return;
   const g = graph;
   const t = g.ctx.currentTime;
+
+  // Car not driving (countdown / paused / FINISHED): fade the whole vehicle to
+  // silence but leave the master alive so the finish fanfare, music and gulls
+  // still play on the results screen.
+  if (!active) {
+    g.engineGain.gain.setTargetAtTime(0, t, 0.12);
+    g.tireGain.gain.setTargetAtTime(0, t, 0.12);
+    g.windGain.gain.setTargetAtTime(0, t, 0.12);
+    g.boostGain.gain.setTargetAtTime(0, t, 0.12);
+    return;
+  }
 
   const safeRpm = Number.isFinite(rpm) ? rpm : cfg.idleRpm;
   const safeSpeed = Number.isFinite(speedKmh) ? Math.max(0, speedKmh) : 0;

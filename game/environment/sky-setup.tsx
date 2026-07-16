@@ -3,7 +3,14 @@
 import { Environment } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { type DirectionalLight, Fog, type HemisphereLight } from "three";
+import {
+  AdditiveBlending,
+  type DirectionalLight,
+  Fog,
+  type HemisphereLight,
+  type Mesh,
+  type MeshBasicMaterial,
+} from "three";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { getActiveTrack } from "@/game/procedural/geometry/road-path";
 import { computeSky, makeSkyState, timeOfDay } from "@/game/systems/time-of-day";
@@ -24,6 +31,8 @@ export function SkySetup() {
 
   const sun = useRef<DirectionalLight>(null);
   const hemi = useRef<HemisphereLight>(null);
+  const sunDisc = useRef<Mesh>(null);
+  const sunGlow = useRef<Mesh>(null);
   const sky = useMemo(() => makeSkyState(), []);
   const camera = useThree((s) => s.camera);
 
@@ -58,6 +67,41 @@ export function SkySetup() {
       hemi.current.intensity = sky.hemiIntensity;
       hemi.current.color.copy(sky.hemiSky);
     }
+
+    // Visible sun disc + glow, hung far out over the OPEN SEA at the horizon so
+    // it comes into view as the road bends seaward. Follows the camera in XZ; a
+    // touch of forward bias keeps it "al fondo". Hidden at night.
+    const disc = sunDisc.current;
+    const glow = sunGlow.current;
+    if (disc && glow) {
+      const day = Math.max(0, sky.sunElev);
+      const visible = !sky.night && day > 0.02;
+      disc.visible = visible;
+      glow.visible = visible;
+      if (visible) {
+        const seaX = getActiveTrack().seaXdir;
+        const D = 1700;
+        // Mostly seaward, a little forward (+Z), elevation rising toward noon.
+        const dx = seaX * 0.86;
+        const dz = 0.34;
+        const dy = 0.16 + day * 0.42;
+        const inv = D / Math.hypot(dx, dy, dz);
+        const px = camera.position.x + dx * inv;
+        const py = dy * inv;
+        const pz = camera.position.z + dz * inv;
+        disc.position.set(px, py, pz);
+        glow.position.set(px, py, pz);
+        disc.lookAt(camera.position);
+        glow.lookAt(camera.position);
+        const warm = 0.5 + day * 0.5;
+        (disc.material as MeshBasicMaterial).color.setRGB(
+          1,
+          0.82 + warm * 0.15,
+          0.6 + warm * 0.3,
+        );
+      }
+    }
+
     gl.toneMappingExposure = sky.exposure;
     const fog = scene.fog as Fog | null;
     if (fog) {
@@ -81,6 +125,24 @@ export function SkySetup() {
       />
 
       <hemisphereLight ref={hemi} args={["#dcecff", "#2a2620", 0.32]} />
+
+      {/* Sun disc + soft halo — bright, unlit, so bloom wraps it in glow. */}
+      <mesh ref={sunDisc} scale={70}>
+        <circleGeometry args={[1, 40]} />
+        <meshBasicMaterial color="#fff2cc" toneMapped={false} fog={false} />
+      </mesh>
+      <mesh ref={sunGlow} scale={230}>
+        <circleGeometry args={[1, 40]} />
+        <meshBasicMaterial
+          color="#ffd27a"
+          transparent
+          opacity={0.32}
+          blending={AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+          fog={false}
+        />
+      </mesh>
 
       <directionalLight
         ref={sun}

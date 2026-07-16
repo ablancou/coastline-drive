@@ -9,6 +9,7 @@ import {
   updateMusic,
 } from "@/game/procedural/audio/engine-audio";
 import { vehicleTarget } from "@/game/systems/vehicle-target";
+import { useRaceStore } from "@/stores/race-store";
 import { useTelemetryStore } from "@/stores/telemetry-store";
 
 /**
@@ -28,6 +29,8 @@ export function EngineAudioSystem() {
   useFrame(() => {
     if (!isEngineAudioRunning()) return;
     updateMusic();
+    const race = useRaceStore.getState();
+    const active = race.started && !race.paused && !race.finished;
     const s = useTelemetryStore.getState().snapshot;
     updateEngineAudio(
       s.rpm,
@@ -37,6 +40,7 @@ export function EngineAudioSystem() {
       Math.abs(s.steer),
       Math.abs(vehicleTarget.slip),
       vehicleTarget.boost,
+      active,
     );
   });
 

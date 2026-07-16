@@ -2,7 +2,7 @@ import { Color } from "three";
 
 /** Continuous time of day, 0..1 (0 = midnight, 0.25 = sunrise, 0.5 = noon,
  * 0.75 = sunset). Mutated by TimeOfDaySystem, read imperatively by the sky. */
-export const timeOfDay = { value: 0.42 };
+export const timeOfDay = { value: 0.46 };
 
 /** Seconds for a full day → noticeable shift within ~2 minutes of play. */
 export const DAY_LENGTH_SECONDS = 480;
@@ -56,15 +56,15 @@ export function computeSky(t: number, out: SkyState): SkyState {
   out.sunZ = Math.sin(angle) * 130;
   out.sunY = 40 + day * 180;
 
-  out.exposure = night ? 0.55 : 0.72 + day * 0.48;
+  out.exposure = night ? 0.55 : 0.9 + day * 0.55;
 
   // Fog: day blue → warm at horizon; dark blue at night.
   _c2.copy(DAY_FOG).lerp(SUNSET_FOG, horizon);
   out.fog = night ? _fog.copy(NIGHT_FOG) : _fog.copy(_c2);
 
-  out.hemiIntensity = night ? 0.28 : 0.3 + day * 0.15;
-  out.hemiSky = night ? _hemiSky.set("#34406a") : _hemiSky.set("#dcecff");
-  out.envIntensity = night ? 0.5 : 0.7 + day * 0.6;
+  out.hemiIntensity = night ? 0.28 : 0.42 + day * 0.22;
+  out.hemiSky = night ? _hemiSky.set("#34406a") : _hemiSky.set("#eaf4ff");
+  out.envIntensity = night ? 0.5 : 0.85 + day * 0.7;
 
   return out;
 }

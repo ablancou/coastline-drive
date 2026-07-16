@@ -228,7 +228,7 @@ export function Garage({ onStart, onBack }: GarageProps) {
                 type="button"
                 className={`pill${!night ? " pill--active" : ""}`}
                 onClick={() => {
-                  timeOfDay.value = 0.42;
+                  timeOfDay.value = 0.46;
                   setNight(false);
                 }}
               >

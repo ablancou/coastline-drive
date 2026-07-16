@@ -1,16 +1,9 @@
 "use client";
 
-import { Html, OrbitControls } from "@react-three/drei";
+import { Html, OrbitControls, useTexture } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import {
-  BackSide,
-  type Group,
-  SRGBColorSpace,
-  type Texture,
-  TextureLoader,
-  Vector3,
-} from "three";
+import { Suspense, useMemo, useRef, useState } from "react";
+import { BackSide, type Group, SRGBColorSpace, Vector3 } from "three";
 import { SKY_PRESETS } from "@/game/constants/sky-presets";
 import { useSceneStore } from "@/stores/scene-store";
 
@@ -40,30 +33,33 @@ function latLonToVec3(lat: number, lon: number, r: number): Vector3 {
   );
 }
 
+/** Textured Earth — suspends on the JPG; wrapped in its own Suspense below so
+ * only the sphere waits, never the pins or the whole canvas. */
+function EarthSphere() {
+  const earth = useTexture("/assets/third-party/textures/earth_2048.jpg");
+  earth.colorSpace = SRGBColorSpace;
+  return (
+    <mesh>
+      <sphereGeometry args={[R, 64, 64]} />
+      {/* Emissive uses the same map so continents stay clearly readable even on
+          the shadowed limb — the globe is a UI element, not a lit planet sim. */}
+      <meshStandardMaterial
+        map={earth}
+        emissiveMap={earth}
+        emissive="#ffffff"
+        emissiveIntensity={0.55}
+        roughness={0.85}
+        metalness={0.05}
+      />
+    </mesh>
+  );
+}
+
 function GlobeScene() {
   const skyIndex = useSceneStore((s) => s.skyIndex);
   const setSky = useSceneStore((s) => s.setSky);
   const [hover, setHover] = useState<number | null>(null);
   const spin = useRef<Group>(null);
-
-  // Load without Suspense: the globe renders immediately (plain ocean-blue
-  // sphere + pins) and the Earth texture pops in when ready. Avoids the whole
-  // canvas hanging on a suspended loader when multiple canvases coexist.
-  const [earth, setEarth] = useState<Texture | null>(null);
-  useEffect(() => {
-    let disposed = false;
-    new TextureLoader().load("/assets/third-party/textures/earth_2048.jpg", (tex) => {
-      if (disposed) {
-        tex.dispose();
-        return;
-      }
-      tex.colorSpace = SRGBColorSpace;
-      setEarth(tex);
-    });
-    return () => {
-      disposed = true;
-    };
-  }, []);
 
   const pins = useMemo(
     () =>
@@ -80,21 +76,22 @@ function GlobeScene() {
 
   return (
     <>
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[4, 2, 5]} intensity={1.5} />
+      <ambientLight intensity={1.1} />
+      <directionalLight position={[4, 2, 5]} intensity={2.2} />
 
       {/* Axial tilt */}
       <group rotation={[0, 0, 0.41]}>
         <group ref={spin}>
-          <mesh>
-            <sphereGeometry args={[R, 64, 64]} />
-            <meshStandardMaterial
-              map={earth}
-              color={earth ? "#ffffff" : "#1d4e7a"}
-              roughness={0.85}
-              metalness={0.05}
-            />
-          </mesh>
+          <Suspense
+            fallback={
+              <mesh>
+                <sphereGeometry args={[R, 48, 48]} />
+                <meshStandardMaterial color="#1d4e7a" roughness={0.85} />
+              </mesh>
+            }
+          >
+            <EarthSphere />
+          </Suspense>
 
           {pins.map((pin) => {
             const active = pin.i === skyIndex;
