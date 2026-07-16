@@ -1,8 +1,15 @@
-/** Shared rival world positions (XZ), written by Rivals, read by the player
- * controller for soft collision. */
-export const rivalPositions: { x: number; z: number }[] = [];
+/** A car's shared world slot: XZ for player collision, plus road-space
+ * progress (t) and lane offset so AI cars can keep distance from each other. */
+export interface CarSlot {
+  x: number;
+  z: number;
+  t: number;
+  lane: number;
+}
 
-/** Same idea for ambient traffic — slower cars sharing the player's direction.
- * Written by Traffic, read by the player controller so they're solid, not
- * ghosts. */
-export const trafficPositions: { x: number; z: number }[] = [];
+/** Rival world slots, written by Rivals, read by the player controller for
+ * soft collision and by the separation logic. */
+export const rivalPositions: CarSlot[] = [];
+
+/** Same for ambient traffic — slower cars sharing the player's direction. */
+export const trafficPositions: CarSlot[] = [];

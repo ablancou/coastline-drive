@@ -11,8 +11,8 @@ import { createShoreFoamGeometry } from "@/game/procedural/geometry/shore-foam";
  * rolls over them, selling breaking waves without any texture assets.
  */
 export function ShoreFoam() {
-  const inner = useMemo(() => createShoreFoamGeometry(1.8, 3.4, -1.18), []);
-  const outer = useMemo(() => createShoreFoamGeometry(4.2, 7.2, -1.26), []);
+  const inner = useMemo(() => createShoreFoamGeometry(1.8, 3.4, -1.18, 420), []);
+  const outer = useMemo(() => createShoreFoamGeometry(4.2, 7.2, -1.26, 420), []);
 
   const innerMat = useMemo(
     () =>

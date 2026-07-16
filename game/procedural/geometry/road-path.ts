@@ -2,7 +2,7 @@ import { CatmullRomCurve3, Vector3 } from "three";
 import { DEFAULT_TRACK, type Track } from "@/game/constants/tracks";
 
 export const ROAD_WIDTH = 12;
-export const ROAD_SEGMENTS = 560;
+export const ROAD_SEGMENTS = 900;
 /** Road surface height (all track points sit at this y). */
 export const ROAD_SURFACE_Y = 0.02;
 /** Guardrails live on the exterior (ocean) edge of the loop. */
@@ -66,8 +66,8 @@ const _coastSide = new Vector3();
 // quantisation). Result: ~10× faster queries and a much shorter scene-build
 // hitch, with better accuracy than the sampled search.
 // ---------------------------------------------------------------------------
-const ROAD_LUT_N = 768;
-const COAST_LUT_N = 512;
+const ROAD_LUT_N = 1024;
+const COAST_LUT_N = 768;
 
 function buildLUT(curve: CatmullRomCurve3, n: number): Float32Array {
   const lut = new Float32Array(n * 2);

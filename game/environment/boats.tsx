@@ -17,8 +17,8 @@ import {
   getCoastCurve,
 } from "@/game/procedural/geometry/road-path";
 
-const COUNT = 4;
-const HULL_COLORS = [0xf2f4f6, 0x24466b, 0xf2f4f6, 0x7a2e2e];
+const COUNT = 7;
+const HULL_COLORS = [0xf2f4f6, 0x24466b, 0xf2f4f6, 0x7a2e2e, 0x2f6a55, 0xf2f4f6, 0x8a6a2a];
 /** Ocean plane sits at y = -1.5; hulls ride just above it. */
 const SEA_Y = -1.5;
 
@@ -71,7 +71,7 @@ export function Boats() {
       boat.add(sail);
 
       // Anchor offshore along the coast, well out on the water.
-      const t = 0.14 + i * 0.24;
+      const t = 0.08 + i * 0.13;
       curve.getPoint(t, _p);
       curve.getTangent(t, _tan).normalize();
       _side.crossVectors(UP, _tan).normalize();

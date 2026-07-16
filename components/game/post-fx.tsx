@@ -3,6 +3,7 @@
 import {
   Bloom,
   EffectComposer,
+  HueSaturation,
   SMAA,
   Vignette,
 } from "@react-three/postprocessing";
@@ -20,6 +21,8 @@ export function PostFx() {
         luminanceThreshold={0.8}
         luminanceSmoothing={0.25}
       />
+      {/* Gentle saturation lift — postcard color without clown territory. */}
+      <HueSaturation saturation={0.14} />
       <Vignette offset={0.22} darkness={0.72} eskil={false} />
       <SMAA />
     </EffectComposer>

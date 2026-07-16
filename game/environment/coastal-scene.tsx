@@ -9,7 +9,9 @@ import { Buildings } from "@/game/environment/buildings";
 import { CliffRocks } from "@/game/environment/cliff-rocks";
 import { CoastalProps } from "@/game/environment/coastal-props";
 import { FinishLine } from "@/game/environment/finish-line";
+import { Flowers } from "@/game/environment/flowers";
 import { Foliage } from "@/game/environment/foliage";
+import { MagicMotes } from "@/game/environment/magic-motes";
 import { Guardrails } from "@/game/environment/guardrails";
 import { Ocean } from "@/game/environment/ocean";
 import { Seagulls } from "@/game/environment/seagulls";
@@ -31,7 +33,7 @@ export function CoastalScene() {
   const roadGeometry = useMemo(() => createRoadGeometry(), []);
   const markingsGeometry = useMemo(() => createRoadMarkingsGeometry(), []);
   const terrainGeometry = useMemo(
-    () => createTerrainGeometry(520, 1460, 200, biome),
+    () => createTerrainGeometry(520, 3800, 260, biome),
     [biome],
   );
   const asphaltTexture = useMemo(() => {
@@ -88,6 +90,8 @@ export function CoastalScene() {
       <Boats />
       <Seagulls />
       <StreetLamps />
+      <Flowers />
+      <MagicMotes />
       <FinishLine />
     </group>
   );

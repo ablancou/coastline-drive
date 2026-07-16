@@ -60,13 +60,13 @@ function createCypress(h: number): Object3D {
 
 /** Scatter biome-appropriate plants on the land side of the circuit. */
 export function buildFoliage(biome: Biome): Object3D {
-  if (biome.id === "tropical") return buildPalms(biome.palms);
+  if (biome.id === "tropical") return buildPalms(Math.round(biome.palms * 2));
 
   const root = new Group();
   const sign = getRoadInteriorSign();
   const frame = { point: new Vector3(), tangent: new Vector3(), side: new Vector3() };
   const arid = biome.id === "arid";
-  const count = arid ? 26 : 30;
+  const count = arid ? 52 : 60;
 
   for (let i = 0; i < count; i++) {
     const t = hash01(i, 1.1);

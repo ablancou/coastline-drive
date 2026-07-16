@@ -44,7 +44,7 @@ export function Ocean() {
 
   return (
     <mesh rotation-x={-Math.PI / 2} position={[0, -1.5, 0]} material={material} receiveShadow>
-      <planeGeometry args={[2100, 2100, 170, 170]} />
+      <planeGeometry args={[4400, 4400, 280, 280]} />
     </mesh>
   );
 }

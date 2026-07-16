@@ -18,7 +18,7 @@ import {
 } from "@/game/procedural/geometry/road-path";
 import { useSceneStore } from "@/stores/scene-store";
 
-const COUNT = 26;
+const COUNT = 48;
 
 /**
  * Highway lamp posts on the land shoulder, arms reaching over the road. The

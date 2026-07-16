@@ -51,7 +51,7 @@ const _faceQ = new Quaternion();
  * full window grid (front + both sides) as just TWO instanced draws — lit and
  * unlit glass — plus parapets, AC units and antennas on the roofline.
  */
-export function buildBuildings(count = 34): Object3D {
+export function buildBuildings(count = 52): Object3D {
   const root = new Group();
   const sign = getRoadInteriorSign();
   const frame = { point: new Vector3(), tangent: new Vector3(), side: new Vector3() };

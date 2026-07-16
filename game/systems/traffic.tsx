@@ -10,12 +10,16 @@ import {
   Vector3,
 } from "three";
 import { getChassisRestHeightAboveRoad } from "@/game/constants/spawn";
-import { ROAD_WIDTH, sampleRoadFrame } from "@/game/procedural/geometry/road-path";
+import {
+  getRoadCurve,
+  ROAD_WIDTH,
+  sampleRoadFrame,
+} from "@/game/procedural/geometry/road-path";
 import { trafficPositions } from "@/game/systems/rival-state";
 import { useRaceStore } from "@/stores/race-store";
 
-const COUNT = 4;
-const COLORS = [0xe6e8ea, 0x2b6cb0, 0xb7791f, 0x394a5a];
+const COUNT = 6;
+const COLORS = [0xe6e8ea, 0x2b6cb0, 0xb7791f, 0x394a5a, 0x9b2c2c, 0x2f855a];
 
 interface TrafficCar {
   group: Object3D;
@@ -41,6 +45,7 @@ export function Traffic() {
   const root = useMemo(() => {
     const g = new Object3D();
     const cars: TrafficCar[] = [];
+    const roadLen = getRoadCurve().getLength();
     const bodyGeo = new BoxGeometry(1.7, 0.42, 3.7);
     const cabinGeo = new BoxGeometry(1.5, 0.5, 1.9);
     const wheelGeo = new BoxGeometry(0.34, 0.62, 0.62);
@@ -48,6 +53,9 @@ export function Traffic() {
     const glassMat = new MeshStandardMaterial({ color: 0x1a2530, roughness: 0.25, metalness: 0.3 });
     const headMat = new MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2cf, emissiveIntensity: 2, roughness: 0.3 });
     const tailMat = new MeshStandardMaterial({ color: 0x3a0508, emissive: 0xff2233, emissiveIntensity: 2.2, roughness: 0.4 });
+    const occupantMat = new MeshStandardMaterial({ color: 0x1c222b, roughness: 0.8 });
+    const occHeadGeo = new BoxGeometry(0.26, 0.26, 0.24);
+    const occTorsoGeo = new BoxGeometry(0.5, 0.34, 0.3);
 
     for (let i = 0; i < COUNT; i++) {
       const car = new Object3D();
@@ -66,6 +74,14 @@ export function Traffic() {
       const glass = new Mesh(new BoxGeometry(1.52, 0.4, 1.5), glassMat);
       glass.position.set(0, 0.54, -0.1);
       car.add(glass);
+
+      // Driver silhouette behind the glass (LHD) — cars never ride empty.
+      const occTorso = new Mesh(occTorsoGeo, occupantMat);
+      occTorso.position.set(0.34, 0.5, 0.1);
+      car.add(occTorso);
+      const occHead = new Mesh(occHeadGeo, occupantMat);
+      occHead.position.set(0.34, 0.78, 0.1);
+      car.add(occHead);
 
       // Lights: white nose, red tail (local +Z faces forward).
       for (const sx of [-0.55, 0.55]) {
@@ -90,15 +106,18 @@ export function Traffic() {
         wheels.push(w);
       }
       g.add(car);
+      const lane = (i % 2 === 0 ? -1 : 1) * (ROAD_WIDTH * 0.22);
       cars.push({
         group: car,
         wheels,
         // Spread ahead of the player's spawn so they appear as traffic to catch.
-        t: 0.16 + i * 0.18,
-        speed: 0.009 + (i % 2) * 0.003, // cruisers — much slower than the race
-        lane: (i % 2 === 0 ? -1 : 1) * (ROAD_WIDTH * 0.22),
+        t: 0.12 + i * 0.15,
+        // Cruiser pace in real m/s (~13-17), converted to track fraction/s so
+        // the feel is identical no matter how long the road is.
+        speed: (13 + (i % 2) * 4) / roadLen,
+        lane,
       });
-      trafficPositions[i] = { x: 0, z: 0 };
+      trafficPositions[i] = { x: 0, z: 0, t: 0, lane };
     }
     carsRef.current = cars;
     return g;
@@ -123,6 +142,8 @@ export function Traffic() {
       if (slot) {
         slot.x = x;
         slot.z = z;
+        slot.t = car.t;
+        slot.lane = car.lane;
       }
     });
   });
