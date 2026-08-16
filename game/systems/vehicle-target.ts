@@ -18,6 +18,8 @@ export interface VehicleTargetState {
   steer: number;
   /** 0..1 — grinding against the road edge this step (drives sand dust). */
   edge: number;
+  /** Heading (radians) — recorded for ghost playback. */
+  rotationY: number;
 }
 
 export const vehicleTarget: VehicleTargetState = {
@@ -31,6 +33,7 @@ export const vehicleTarget: VehicleTargetState = {
   boost: false,
   steer: 0,
   edge: 0,
+  rotationY: 0,
 };
 
 export function updateVehicleTarget(

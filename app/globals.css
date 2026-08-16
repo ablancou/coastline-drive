@@ -220,6 +220,34 @@ body {
   color: #e8eef4;
 }
 
+/* Sector split delta vs. your best run — green ahead, red behind. */
+.lap__split {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  animation: split-pop 0.32s ease-out;
+}
+
+.lap__split--ahead {
+  color: #7cffb2;
+  text-shadow: 0 0 14px rgba(124, 255, 178, 0.55);
+}
+
+.lap__split--behind {
+  color: #ff8a6a;
+  text-shadow: 0 0 14px rgba(255, 138, 106, 0.45);
+}
+
+@keyframes split-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.94);
+  }
+}
+
 .lap__rows {
   display: flex;
   flex-direction: column;

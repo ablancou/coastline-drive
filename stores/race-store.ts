@@ -15,6 +15,9 @@ interface RaceStore {
   timeTrial: boolean;
   /** Increments on each fresh run — the car respawns at the start. */
   runId: number;
+  /** Replay your best run as a translucent ghost car. */
+  ghostEnabled: boolean;
+  setGhostEnabled: (v: boolean) => void;
   setTimeTrial: (v: boolean) => void;
   setTargetLaps: (n: number) => void;
   setPaused: (v: boolean) => void;
@@ -35,6 +38,8 @@ export const useRaceStore = create<RaceStore>((set) => ({
   totalRacers: 1,
   timeTrial: false,
   runId: 0,
+  ghostEnabled: true,
+  setGhostEnabled: (v) => set({ ghostEnabled: v }),
   setTimeTrial: (v) => set({ timeTrial: v }),
   setTargetLaps: (n) => set({ targetLaps: Math.max(0, n) }),
   setPaused: (v) => set({ paused: v }),

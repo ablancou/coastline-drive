@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { PRIVACY, TERMS, type LegalDoc } from "@/game/constants/legal";
 import { useLegalStore } from "@/stores/legal-store";
 
@@ -10,6 +11,11 @@ export function Legal() {
   const accept = useLegalStore((s) => s.accept);
   const open = useLegalStore((s) => s.open);
   const close = useLegalStore((s) => s.close);
+  const hydrate = useLegalStore((s) => s.hydrate);
+
+  // Read stored consent only after mount, so SSR and the first client render
+  // agree (the banner fades in a frame later if consent is missing).
+  useEffect(() => hydrate(), [hydrate]);
 
   const doc: LegalDoc | null = openDoc === "privacy" ? PRIVACY : openDoc === "terms" ? TERMS : null;
 

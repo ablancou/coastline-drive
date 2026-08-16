@@ -12,6 +12,7 @@ import { CameraBootstrap } from "@/game/systems/camera-bootstrap";
 import { ChaseCamera } from "@/game/systems/chase-camera";
 import { DriftEffects } from "@/game/systems/drift-effects";
 import { EngineAudioSystem } from "@/game/systems/engine-audio-system";
+import { GhostCar } from "@/game/systems/ghost-car";
 import { Headlights } from "@/game/systems/headlights";
 import { LapSystem } from "@/game/systems/lap-system";
 import { Rivals } from "@/game/systems/rivals";
@@ -48,6 +49,7 @@ export function GameScene() {
           <VehicleController />
         </PhysicsWorld>
         <LapSystem />
+        <GhostCar />
         <DriftEffects />
       </Fragment>
     </>

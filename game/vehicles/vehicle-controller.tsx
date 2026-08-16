@@ -239,6 +239,7 @@ export function VehicleController() {
     vehicleTarget.slip = wrapAngle(sim.heading - sim.velAngle);
     vehicleTarget.handbrake = inputRef.current.handbrake;
     vehicleTarget.steer = sim.steerAngle;
+    vehicleTarget.rotationY = sim.heading;
 
     // Nitro state (mirrors stepVehicle's boost gate) → flames + whoosh audio.
     const boosting =

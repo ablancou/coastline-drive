@@ -61,6 +61,8 @@ export function Garage({ onStart, onBack }: GarageProps) {
   const bestByTrack = useLapStore((s) => s.bestByTrack);
   const timeTrial = useRaceStore((s) => s.timeTrial);
   const setTimeTrial = useRaceStore((s) => s.setTimeTrial);
+  const ghostEnabled = useRaceStore((s) => s.ghostEnabled);
+  const setGhostEnabled = useRaceStore((s) => s.setGhostEnabled);
   const [showRecords, setShowRecords] = useState(false);
 
   return (
@@ -217,6 +219,27 @@ export function Garage({ onStart, onBack }: GarageProps) {
                 onClick={() => setTimeTrial(true)}
               >
                 Contrarreloj
+              </button>
+            </div>
+          </section>
+
+          <section className="garage__section">
+            <span className="custom__label">FANTASMA</span>
+            <div className="custom__toggle">
+              <button
+                type="button"
+                className={`pill${ghostEnabled ? " pill--active" : ""}`}
+                onClick={() => setGhostEnabled(true)}
+                title="Corre contra la repetición de tu mejor tiempo"
+              >
+                Sí
+              </button>
+              <button
+                type="button"
+                className={`pill${!ghostEnabled ? " pill--active" : ""}`}
+                onClick={() => setGhostEnabled(false)}
+              >
+                No
               </button>
             </div>
           </section>
